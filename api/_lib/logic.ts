@@ -354,6 +354,8 @@ const getAnswerValue = (answer: any, mapping: AnswerMapping, isReversed?: boolea
     }
 };
 
+const MINIMUM_COMPLETION_RATIO = 0.8; // Require 80% of questions for a valid score
+
 function calculateScore(config: DomainConfig, allAnswers: { [questionId: string]: any }): number | null {
     const screenerQuestions = config.questionIds.filter(q => q.screener);
 
@@ -365,11 +367,8 @@ function calculateScore(config: DomainConfig, allAnswers: { [questionId: string]
         });
 
         if (allScreenersNegative) {
-            // If all screeners are negative, the score is the minimum possible total score.
             const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
-            if (config.scoringMethod === 'AVERAGE') {
-                return negativeValue;
-            }
+            if (config.scoringMethod === 'AVERAGE') return negativeValue;
             return negativeValue * totalQuestions;
         }
     }
@@ -378,36 +377,29 @@ function calculateScore(config: DomainConfig, allAnswers: { [questionId: string]
         .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping, q.reverse))
         .filter((val): val is number => val !== null);
 
-    if (numericAnswers.length === 0) return null;
+    const answeredQuestions = numericAnswers.length;
+    if (answeredQuestions === 0) return null;
 
     if (config.scoringMethod === 'MAX_THRESHOLD') {
         return Math.max(...numericAnswers);
     }
     
+    // For SUM and AVERAGE methods, enforce a completion threshold
+    const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
+    if ((answeredQuestions / totalQuestions) < MINIMUM_COMPLETION_RATIO) {
+        return null; // Not enough questions were answered for a reliable score
+    }
+
     const rawSum = numericAnswers.reduce((sum, val) => sum + val, 0);
 
     if (config.scoringMethod === 'AVERAGE') {
-        return parseFloat((rawSum / numericAnswers.length).toFixed(1));
+        // The average is based on the number of questions answered, which is valid.
+        return parseFloat((rawSum / answeredQuestions).toFixed(1));
     }
     
-    // Default to SUM scoring
-    const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
-    const answeredQuestions = numericAnswers.length;
-
-    // For SUM scores, only score if at least one screener was answered positively (implies follow-ups were shown)
-    // or if there are no screeners defined.
-    const nonScreenerQuestions = config.questionIds.filter(q => !q.screener);
-    if (screenerQuestions.length > 0 && answeredQuestions < screenerQuestions.length + nonScreenerQuestions.length * 0.75) {
-         if (answeredQuestions < screenerQuestions.length) return null; // Didn't even answer the screeners
-    }
-
-
-    // Prorate the score if some questions were missed
-    if (answeredQuestions < totalQuestions) {
-        return Math.round((rawSum / answeredQuestions) * totalQuestions);
-    }
-
-    return rawSum;
+    // Default to SUM scoring, prorating the score if necessary.
+    // This is now safe because we've already checked the completion threshold.
+    return Math.round((rawSum / answeredQuestions) * totalQuestions);
 }
 
 function getInterpretation(score: number | null, intervals: ReferenceInterval[]): string {
