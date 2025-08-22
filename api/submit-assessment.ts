@@ -1,8 +1,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { generateReportFromSubmission } from '../lib/logic.ts';
-import type { IndividualData, AssessmentSubmission } from '../lib/types.ts';
+import { generateReportFromSubmission, type IndividualData, type AssessmentSubmission } from './_lib/assessment';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;

@@ -1,8 +1,53 @@
 
-import { IndividualData, Domain, ReferenceInterval, AssessmentSubmission } from './types.ts';
+export interface ReferenceInterval {
+  label: string;
+  min: number;
+  max: number | null;
+  color: string;
+}
 
-// Re-exporting IndividualData for use in API routes
-export type { IndividualData };
+export interface IndividualExperienced {
+  name: string;
+  link: string;
+}
+
+export interface Domain {
+  name: string;
+  about: string;
+  aboutLink: string;
+  result: string;
+  score: number | null;
+  userInterpretation: string;
+  referenceIntervals: ReferenceInterval[];
+  insightsAndSupport: string;
+  individualsExperienced: IndividualExperienced[];
+}
+
+export interface IndividualData {
+  individualId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  assessmentDate: string;
+  domains: Domain[];
+}
+
+export interface GlobalResource {
+    text: string;
+    link: string;
+}
+
+// This interface represents the data structure of a successfully submitted form
+// from the frontend, which is then processed by the backend logic.
+export interface AssessmentSubmission {
+  submissionId: string;
+  firstName: string;
+
+  lastName: string;
+  email: string;
+  assessmentDate: string;
+  answers: { [questionId: string]: any };
+}
 
 
 // --- SCORING AND INTERPRETATION LOGIC ---
@@ -87,9 +132,9 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         intendedQuestionCount: 10,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtItemgt', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt5', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt6' }, { id: 'ltemgtinTheltemgtltstronggtItemgt7' },
-            { id: 'ltemgtinTheltemgtltstronggtltemgt8' }, { id: 'ltemgtinTheltemgtltstronggtItemgt9' }, { id: 'ltemgtinTheltemgtltstronggtitemgt10' }, { id: 'ltemgtinTheltemgtltstronggtitemgt11' },
-            { id: 'ltemgtinTheltemgtltstronggtitemgt13' }, { id: 'ltemgtinTheltemgtltstronggtltemgt14' }
+            { id: 'dep_1', screener: true }, { id: 'dep_2', screener: true }, { id: 'dep_3' }, { id: 'dep_4' },
+            { id: 'dep_5' }, { id: 'dep_6' }, { id: 'dep_7' }, { id: 'dep_8' },
+            { id: 'dep_9' }, { id: 'dep_10' }
         ],
         referenceIntervals: [ // 8 questions, 1-5 scale. Range 8-40. (Prorated for 10)
             { label: 'None to slight', min: 10, max: 27, color: 'bg-green-500' }, // T < 60
@@ -109,8 +154,8 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         intendedQuestionCount: 6,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtItemgt15', screener: true }, { id: 'ltemgtinTheltemgtltstronggtltemgt16' }, { id: 'ltemgtinTheltemgtltstronggtItemgt17' }, 
-            { id: 'ltemgtinTheltemgtltstronggtitemgt18' }, { id: 'ltemgtinTheltemgtltstronggtItemgt19' }, { id: 'ltemgtinTheltemgtltstronggtItemgt20' }
+            { id: 'ang_1', screener: true }, { id: 'ang_2' }, { id: 'ang_3' }, 
+            { id: 'ang_4' }, { id: 'ang_5' }, { id: 'ang_6' }
         ],
         referenceIntervals: [ // 5 questions, 1-5 scale. Range 5-25. (Prorated for 6)
             { label: 'None to slight', min: 6, max: 15, color: 'bg-green-500' }, // T < 55
@@ -131,8 +176,8 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'DEFAULT',
         intendedQuestionCount: 7,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtltemgt21', screener: true }, { id: 'ltemgtinTheltemgtltstronggtltemgt27', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt22' }, { id: 'ltemgtinTheltemgtltstronggtitemgt23' }, 
-            { id: 'ltemgtinTheltemgtltstronggtitemgt24' }, { id: 'ltemgtinTheltemgtltstronggtltemgt25' }, { id: 'ltemgtinTheltemgtltstronggtltemgt26' }
+            { id: 'man_1', screener: true }, { id: 'man_2', screener: true }, { id: 'man_3' }, { id: 'man_4' }, 
+            { id: 'man_5' }, { id: 'man_6' }, { id: 'man_7' }
         ],
         referenceIntervals: [ // 5 questions, 0-4 scale. Range 0-20. (Prorated for 7)
             { label: 'Low Probability', min: 0, max: 8, color: 'bg-green-500' },
@@ -151,9 +196,9 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         intendedQuestionCount: 10,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtItemgt28', screener: true }, { id: 'ltemgtinTheltemgtltstronggtltemgt29', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt30', screener: true }, { id: 'ltemgtinTheltemgtltstronggtitemgt31' },
-            { id: 'ltemgtinTheltemgtltstronggtItemgt32' }, { id: 'ltemgtinTheltemgtltstronggtltemgt33' }, { id: 'ltemgtinTheltemgtltstronggtltemgt34' }, { id: 'ltemgtinTheltemgtltstronggtitemgt35' },
-            { id: 'ltemgtinTheltemgtltstronggtitemgt36' }, { id: 'ltemgtinTheltemgtltstronggtItemgt37' }
+            { id: 'anx_1', screener: true }, { id: 'anx_2', screener: true }, { id: 'anx_3', screener: true }, { id: 'anx_4' },
+            { id: 'anx_5' }, { id: 'anx_6' }, { id: 'anx_7' }, { id: 'anx_8' },
+            { id: 'anx_9' }, { id: 'anx_10' }
         ],
         referenceIntervals: [ // 7 questions, 1-5 scale. Range 7-35. (Prorated for 10)
             { label: 'None to slight', min: 10, max: 21, color: 'bg-green-500' }, // T < 55
@@ -174,11 +219,11 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PHQ15',
         intendedQuestionCount: 17,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtitemgt38', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt39', screener: true }, { id: 'ltemgtinTheltemgtltstronggtItemgt40' }, { id: 'ltemgtinTheltemgtltstronggtitemgt41' }, 
-            { id: 'ltemgtinTheltemgtltstronggtItemgt42' }, { id: 'ltemgtinTheltemgtltstronggtItemgt43' }, { id: 'ltemgtinTheltemgtltstronggtltemgt44' }, { id: 'ltemgtinTheltemgtltstronggtltemgt45' }, 
-            { id: 'ltemgtinTheltemgtltstronggtltemgt46' }, { id: 'ltemgtinTheltemgtltstronggtitemgt47' }, { id: 'ltemgtinTheltemgtltstronggtItemgt48' }, { id: 'ltemgtinTheltemgtltstronggtItemgt49' },
-            { id: 'ltemgtinTheltemgtltstronggtltemgt50' }, { id: 'ltemgtinTheltemgtltstronggtltemgt51' }, { id: 'ltemgtinTheltemgtltstronggtltemgt52' }, { id: 'ltemgtinTheltemgtltstronggtItemgt53' }, 
-            { id: 'ltemgtinTheltemgtltstronggtItemgt54' }
+            { id: 'som_1', screener: true }, { id: 'som_2', screener: true }, { id: 'som_3' }, { id: 'som_4' }, 
+            { id: 'som_5' }, { id: 'som_6' }, { id: 'som_7' }, { id: 'som_8' }, 
+            { id: 'som_9' }, { id: 'som_10' }, { id: 'som_11' }, { id: 'som_12' },
+            { id: 'som_13' }, { id: 'som_14' }, { id: 'som_15' }, { id: 'som_16' }, 
+            { id: 'som_17' }
         ],
         referenceIntervals: [ // 15 questions, 0-2 scale. Range 0-30. (Prorated for 17)
             { label: 'Minimal', min: 0, max: 5, color: 'bg-green-500' },
@@ -197,7 +242,7 @@ const domainConfigs: DomainConfig[] = [
         name: 'Suicidal Ideation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'ltemgtinTheltemgtltstronggtItemgt55' }],
+        questionIds: [{ id: 'sui_1' }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
@@ -213,7 +258,7 @@ const domainConfigs: DomainConfig[] = [
         name: 'Psychosis',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'ltemgtinTheltemgtltstronggtltemgt56' }, { id: 'ltemgtinTheltemgtltstronggtltemgt57' }],
+        questionIds: [{ id: 'psy_1' }, { id: 'psy_2' }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
@@ -231,15 +276,15 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         intendedQuestionCount: 8,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtltemgt58', screener: true },
-            { id: 'ltemgtinTheltemgtltstronggtItemgt60', reverse: false }, // restless
-            { id: 'ltemgtinTheltemgtltstronggtltemgt61', reverse: true }, // satisfied
-            { id: 'ltemgtinTheltemgtltstronggtItemgt62', reverse: true }, // refreshing
-            { id: 'ltemgtinTheltemgtltstronggtltemgt63', reverse: false }, // difficulty falling
-            { id: 'ltemgtinTheltemgtltstronggtItemgt64', reverse: false }, // trouble staying
-            { id: 'ltemgtinTheltemgtltstronggtitemgt65' },
-            { id: 'ltemgtinTheltemgtltstronggtItemgt66', reverse: true }, // got enough
-            { id: 'ltemgtinTheltemgtltstronggtltemgt67', reverse: true }  // quality was
+            { id: 'slp_1', screener: true },
+            { id: 'slp_2', reverse: false }, // restless
+            { id: 'slp_3', reverse: true }, // satisfied
+            { id: 'slp_4', reverse: true }, // refreshing
+            { id: 'slp_5', reverse: false }, // difficulty falling
+            { id: 'slp_6', reverse: false }, // trouble staying
+            { id: 'slp_7' },
+            { id: 'slp_8', reverse: true }, // got enough
+            { id: 'slp_9', reverse: true }  // quality was
         ],
         referenceIntervals: [ // Range for 8 questions is 8-40. Score will be prorated.
             { label: 'None to slight', min: 8, max: 25, color: 'bg-green-500' }, // T < 55
@@ -257,7 +302,7 @@ const domainConfigs: DomainConfig[] = [
         name: 'Memory',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'ltemgtinTheltemgtltstronggtItemgt68' }],
+        questionIds: [{ id: 'mem_1' }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
@@ -274,9 +319,9 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'DEFAULT',
         intendedQuestionCount: 7,
         questionIds: [
-            { id: 'ltemgtinTheltemgtltstronggtItemgt69', screener: true }, { id: 'ltemgtinTheltemgtltstronggtltemgt70', screener: true }, { id: 'ltemgtinTheltemgtltstronggtltemgt71' }, 
-            { id: 'ltemgtinTheltemgtltstronggtltemgt72' }, { id: 'ltemgtinTheltemgtltstronggtItemgt73' }, { id: 'ltemgtinTheltemgtltstronggtltemgt74' }, 
-            { id: 'ltemgtinTheltemgtltstronggtltemgt75' }
+            { id: 'rep_1', screener: true }, { id: 'rep_2', screener: true }, { id: 'rep_3' }, 
+            { id: 'rep_4' }, { id: 'rep_5' }, { id: 'rep_6' }, 
+            { id: 'rep_7' }
         ],
         referenceIntervals: [ // 5 questions, 0-4 scale. Average range 0-4. (Prorated for 7)
             { label: 'None', min: 0, max: 0.9, color: 'bg-green-500' },
@@ -295,7 +340,7 @@ const domainConfigs: DomainConfig[] = [
         name: 'Dissociation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'ltemgtinTheltemgtltstronggtltemgt76' }],
+        questionIds: [{ id: 'dis_1' }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
@@ -310,7 +355,7 @@ const domainConfigs: DomainConfig[] = [
         name: 'Personality Functioning',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'ltemgtinTheltemgtltstronggtItemgt77' }, { id: 'ltemgtinTheltemgtltstronggtltemgt78' }],
+        questionIds: [{ id: 'per_1' }, { id: 'per_2' }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
@@ -350,7 +395,8 @@ function calculateScore(config: DomainConfig, allAnswers: { [questionId: string]
         if (allScreenersNegative) {
             const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
             if (config.scoringMethod === 'AVERAGE') return negativeValue;
-            return negativeValue * totalQuestions;
+            if (config.scoringMethod === 'SUM') return negativeValue * totalQuestions;
+            return negativeValue;
         }
     }
 
