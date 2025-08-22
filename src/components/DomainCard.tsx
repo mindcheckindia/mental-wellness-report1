@@ -11,14 +11,13 @@ interface DomainCardProps {
 }
 
 const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
-  // Get all style classes from the centralized helper function
   const { textColor, borderColor } = getStylesForScore(domain.score, domain.referenceIntervals);
   const IconComponent = domainIcons[domain.name];
+  const isPromisDomain = !!domain.tScore;
 
   return (
     <div id={`domain-${index}`} className={`bg-white rounded-2xl shadow-lg border-l-8 transition-shadow duration-300 hover:shadow-xl ${borderColor}`}>
         <div className="p-6">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between sm:items-start mb-4 sm:gap-x-4">
                  <div className="flex items-center mb-2 sm:mb-0">
                     {IconComponent && <IconComponent className="h-7 w-7 mr-3 text-blue-800 flex-shrink-0" />}
@@ -31,19 +30,22 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                 </p>
             </div>
 
-            {/* Score Visualization */}
              {domain.score !== null && domain.referenceIntervals.length > 0 ? (
                 <div className="mb-6">
-                    <ScoreBar score={domain.score} intervals={domain.referenceIntervals} />
+                    <ScoreBar 
+                        score={domain.score} 
+                        intervals={domain.referenceIntervals}
+                        scoreLabel={isPromisDomain ? `T-Score: ${domain.tScore}` : `Score: ${domain.rawScore}`}
+                        // Provide min/max for T-Scores to ensure correct visualization scale
+                        minScale={isPromisDomain ? 30 : undefined} 
+                        maxScale={isPromisDomain ? 85 : undefined} 
+                    />
                 </div>
             ) : (
                  <div className="mb-6 p-3 bg-gray-50 rounded-lg text-center text-gray-600 italic">Score not available</div>
             )}
 
-
-            {/* Details Sections */}
             <div className="space-y-6">
-                {/* About This Domain */}
                 <div className="space-y-2">
                      <div className="flex items-center">
                          <InformationCircleIcon className="h-6 w-6 text-blue-500 mr-2" />
@@ -57,7 +59,6 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                     )}
                 </div>
                 
-                {/* Insights & Support */}
                 <div className="space-y-2">
                     <div className="flex items-center">
                         <LightbulbIcon className="h-6 w-6 text-yellow-500 mr-2" />
@@ -66,7 +67,6 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                     <p className="text-gray-700 text-base leading-relaxed pl-8 whitespace-pre-wrap">{domain.insightsAndSupport}</p>
                 </div>
 
-                {/* Individuals Who Experienced This */}
                 <div className="space-y-2">
                     <div className="flex items-center">
                         <UsersIcon className="h-6 w-6 text-teal-500 mr-2" />

@@ -1,14 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { assessmentSections } from '../data/assessmentQuestions';
-import { FeatherIcon } from './icons';
 
-const answerOptions = [
-    'Not at all',
-    'Less than a day or two',
-    'Several days',
-    'More than half the days',
-    'Nearly every day'
-];
+import React, { useState, useMemo, useEffect } from 'react';
+import { assessmentSections, defaultAnswerOptions } from '../data/assessmentQuestions';
+import { FeatherIcon } from './icons';
+import { AssessmentSection, Question } from '../types';
 
 interface AssessmentFormProps {
     // No props needed for live version
@@ -26,35 +20,37 @@ const ProgressTracker = ({ current, total }: { current: number, total: number })
 const AssessmentForm: React.FC<AssessmentFormProps> = () => {
     const [step, setStep] = useState(0); // 0 = user details, 1+ = assessment sections
     const [userDetails, setUserDetails] = useState({ firstName: '', lastName: '', email: '' });
-    const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+    const [answers, setAnswers] = useState<{ [key: string]: number }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleUserDetailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
     };
 
-    const handleAnswerChange = (questionId: string, value: string) => {
+    const handleAnswerChange = (questionId: string, value: number) => {
         setAnswers({ ...answers, [questionId]: value });
     };
+    
+    // Determines if a question should be visible based on answers to trigger questions.
+    const isQuestionVisible = (question: Question): boolean => {
+        if (!question.condition) return true; // Always visible if no condition
+        const { triggerIds, threshold } = question.condition;
+        return triggerIds.some(id => (answers[id] ?? 0) >= threshold);
+    };
 
+    // Memoize the set of visible sections to avoid re-calculation on every render.
+    // A section is visible if at least one of its questions is visible.
     const visibleSections = useMemo(() => {
+        // First, filter all sections to find which ones might be visible now or could become visible.
+        // Screeners are always visible, and conditional sections depend on current answers.
         return assessmentSections.filter(section => {
-            const hasVisibleQuestions = section.questions.some(q => {
-                 if (!q.condition) return true;
-                 const { triggerIds, requiredValues } = q.condition;
-                 return triggerIds.some(id => requiredValues.includes(answers[id]));
-            });
-            return hasVisibleQuestions;
+            return section.questions.some(q => isQuestionVisible(q));
        });
     }, [answers]);
     
-    const getVisibleQuestionsForSection = (section: (typeof assessmentSections)[0]) => {
+    const getVisibleQuestionsForSection = (section: AssessmentSection) => {
         if (!section) return [];
-        return section.questions.filter(q => {
-            if (!q.condition) return true;
-            const { triggerIds, requiredValues } = q.condition;
-            return triggerIds.some(id => requiredValues.includes(answers[id]));
-        });
+        return section.questions.filter(q => isQuestionVisible(q));
     };
     
     useEffect(() => {
@@ -88,32 +84,16 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
             });
     
             if (!response.ok) {
-                let errorMessage = `Server error: ${response.status} ${response.statusText}`;
-                const errorBody = await response.text(); // Read the body ONCE as text.
-                try {
-                    // Try to parse the text as JSON.
-                    const errorData = JSON.parse(errorBody);
-                    errorMessage = errorData.error || errorData.details || errorData.message || 'An unknown error occurred.';
-                } catch (parseError) {
-                    // If parsing fails, the body was not JSON.
-                    console.error("Could not parse error response as JSON, using raw text.", parseError);
-                    if (errorBody && errorBody.trim().startsWith('<')) { // Check for HTML
-                        errorMessage = `An error occurred. The server returned an HTML error page. Please check the Network tab in your browser's developer tools for details.`;
-                    } else if (errorBody) {
-                        errorMessage += `\n\nDetails: ${errorBody.substring(0, 500)}`;
-                    }
-                }
-                throw new Error(errorMessage);
+                const errorData = await response.json().catch(() => ({ error: 'An unknown server error occurred.' }));
+                throw new Error(errorData.error || `Server error: ${response.status}`);
             }
     
             const result = await response.json();
-            
-            // Redirect to the report page with the new submission ID
             window.location.href = `/?submissionId=${result.submissionId}`;
     
         } catch (error: any) {
             console.error("Submission failed:", error);
-            alert(`An error occurred during submission. Please try again.\n\nDetails: ${error.message}`);
+            alert(`An error occurred during submission: ${error.message}`);
             setIsSubmitting(false);
         }
     };
@@ -125,14 +105,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
         const currentSection = visibleSections[step - 1];
         if (!currentSection) return false;
 
-        // Get all questions currently visible on the page.
         const visibleQuestions = getVisibleQuestionsForSection(currentSection);
-        
-        // From that set, filter down to only those explicitly marked as mandatory.
         const mandatoryQuestionsToCheck = visibleQuestions.filter(q => q.mandatory);
     
-        // The user can proceed if they have answered all mandatory questions in the current section.
-        // They will not be blocked by optional follow-up questions that become visible.
         return mandatoryQuestionsToCheck.every(q => answers[q.id] !== undefined);
     };
 
@@ -166,29 +141,33 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
         <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 font-inter">
             <div className="max-w-4xl w-full bg-white p-8 sm:p-12 my-8 rounded-3xl shadow-2xl border border-stone-200">
                 <ProgressTracker current={currentSectionIndex} total={visibleSections.length} />
+                <h2 className="text-3xl font-bold text-stone-800 mb-2">{currentVisibleSection.title}</h2>
                 <p className="text-stone-600 mb-8 text-lg">{currentVisibleSection.description}</p>
                 <form onSubmit={handleSubmit} className="space-y-10">
-                    {visibleQuestions.map((q, index) => (
-                        <fieldset key={q.id} className="p-4 border-l-4 border-stone-200">
-                            <legend className="text-lg font-semibold text-stone-800">{`${index + 1}. ${q.text}`}</legend>
-                            <div className="mt-4 space-y-3">
-                                {answerOptions.map(opt => (
-                                    <label key={opt} className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer ${answers[q.id] === opt ? 'bg-sky-50 border-sky-500 shadow-sm' : 'border-stone-200 hover:border-stone-400'}`}>
-                                        <input
-                                            type="radio"
-                                            name={q.id}
-                                            value={opt}
-                                            checked={answers[q.id] === opt}
-                                            onChange={() => handleAnswerChange(q.id, opt)}
-                                            className="h-5 w-5 text-sky-600 focus:ring-sky-500 border-gray-300"
-                                            required={q.mandatory}
-                                        />
-                                        <span className={`ml-4 text-base ${answers[q.id] === opt ? 'font-semibold text-stone-800' : 'text-stone-700'}`}>{opt}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </fieldset>
-                    ))}
+                    {visibleQuestions.map((q, index) => {
+                        const options = q.answerOptions || defaultAnswerOptions;
+                        return (
+                            <fieldset key={q.id} className="p-4 border-l-4 border-stone-200">
+                                <legend className="text-lg font-semibold text-stone-800">{`${index + 1}. In the past TWO WEEKS, how much have you been bothered by... ${q.text}`}</legend>
+                                <div className="mt-4 space-y-3">
+                                    {options.map(opt => (
+                                        <label key={opt.value} className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer ${answers[q.id] === opt.value ? 'bg-sky-50 border-sky-500 shadow-sm' : 'border-stone-200 hover:border-stone-400'}`}>
+                                            <input
+                                                type="radio"
+                                                name={q.id}
+                                                value={opt.value}
+                                                checked={answers[q.id] === opt.value}
+                                                onChange={() => handleAnswerChange(q.id, opt.value)}
+                                                className="h-5 w-5 text-sky-600 focus:ring-sky-500 border-gray-300"
+                                                required={q.mandatory}
+                                            />
+                                            <span className={`ml-4 text-base ${answers[q.id] === opt.value ? 'font-semibold text-stone-800' : 'text-stone-700'}`}>{opt.text}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </fieldset>
+                        );
+                    })}
                     <div className="flex justify-between mt-12 pt-6 border-t border-stone-200">
                         <button type="button" onClick={prevStep} className="px-6 py-3 bg-stone-200 text-stone-800 font-semibold rounded-full hover:bg-stone-300 transition-colors">Back</button>
                         {currentSectionIndex < visibleSections.length - 1 ? (

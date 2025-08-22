@@ -17,6 +17,8 @@ export interface Domain {
   aboutLink: string;
   result: string;
   score: number | null;
+  rawScore?: number | null;
+  tScore?: number | null;
   userInterpretation: string;
   referenceIntervals: ReferenceInterval[];
   insightsAndSupport: string;
@@ -37,12 +39,9 @@ export interface GlobalResource {
     link: string;
 }
 
-// This interface represents the data structure of a successfully submitted form
-// from the frontend, which is then processed by the backend logic.
 export interface AssessmentSubmission {
   submissionId: string;
   firstName: string;
-
   lastName: string;
   email: string;
   assessmentDate: string;
@@ -52,49 +51,57 @@ export interface AssessmentSubmission {
 
 // --- SCORING AND INTERPRETATION LOGIC ---
 
-// --- Answer to Value Conversion ---
-// Different measures use different scales. These functions standardize them.
+// --- T-Score conversion tables (from PROMIS PDFs) ---
+const depressionTScoreMap: { [raw: number]: number } = { 8: 37.1, 9: 43.3, 10: 46.2, 11: 48.2, 12: 49.8, 13: 51.2, 14: 52.3, 15: 53.4, 16: 54.3, 17: 55.3, 18: 56.2, 19: 57.1, 20: 57.9, 21: 58.8, 22: 59.7, 23: 60.7, 24: 61.6, 25: 62.5, 26: 63.5, 27: 64.4, 28: 65.4, 29: 66.4, 30: 67.4, 31: 68.3, 32: 69.3, 33: 70.4, 34: 71.4, 35: 72.5, 36: 73.6, 37: 74.8, 38: 76.2, 39: 77.9, 40: 81.1 };
+const angerTScoreMap: { [raw: number]: number } = { 5: 32.9, 6: 38.1, 7: 41.3, 8: 44.0, 9: 46.3, 10: 48.4, 11: 50.5, 12: 52.6, 13: 54.7, 14: 56.7, 15: 58.8, 16: 60.8, 17: 62.9, 18: 65.0, 19: 67.2, 20: 69.4, 21: 71.7, 22: 74.1, 23: 76.8, 24: 79.7, 25: 83.3 };
+const anxietyTScoreMap: { [raw: number]: number } = { 7: 36.3, 8: 42.1, 9: 44.7, 10: 46.7, 11: 48.4, 12: 49.9, 13: 51.3, 14: 52.6, 15: 53.8, 16: 55.1, 17: 56.3, 18: 57.6, 19: 58.8, 20: 60.0, 21: 61.3, 22: 62.6, 23: 63.8, 24: 65.1, 25: 66.4, 26: 67.7, 27: 68.9, 28: 70.2, 29: 71.5, 30: 72.9, 31: 74.3, 32: 75.8, 33: 77.4, 34: 79.5, 35: 82.7 };
+const sleepTScoreMap: { [raw: number]: number } = { 8: 28.9, 9: 33.1, 10: 35.9, 11: 38.0, 12: 39.8, 13: 41.4, 14: 42.9, 15: 44.2, 16: 45.5, 17: 46.7, 18: 47.9, 19: 49.0, 20: 50.1, 21: 51.2, 22: 52.2, 23: 53.3, 24: 54.3, 25: 55.3, 26: 56.3, 27: 57.3, 28: 58.3, 29: 59.4, 30: 60.4, 31: 61.5, 32: 62.6, 33: 63.7, 34: 64.9, 35: 66.1, 36: 67.5, 37: 69.0, 38: 70.8, 39: 73.0, 40: 76.5 };
 
-const answerToValueMap: { [key: string]: number } = {
-    'not at all': 0, 'never': 0,
-    'less than a day or two': 1, 'rarely': 1, 'a little bit': 1, 'mild': 1, 'slight': 1,
-    'several days': 2, 'sometimes': 2, 'fair': 2,
-    'more than half the days': 3, 'often': 3, 'quite a bit': 3, 'moderate': 3,
-    'nearly every day': 4, 'always': 4, 'very much': 4, 'extreme': 4
+const convertRawToTScore = (rawScore: number, tScoreMap: { [key: number]: number }): number | null => {
+    return tScoreMap[rawScore] ?? null;
 };
 
+
+// --- Answer to Value Conversion ---
 const getBaseValue = (answer: any): number | null => {
     if (answer === null || answer === undefined || answer === '') return null;
     const directNumber = parseInt(answer, 10);
-    if (!isNaN(directNumber) && directNumber >= 0 && directNumber <= 5) return directNumber;
+    if (!isNaN(directNumber)) return directNumber;
 
+    // Fallback for text-based answers (less common with new form structure but good for robustness)
     const lowerAnswer = String(answer).toLowerCase();
-    for (const key in answerToValueMap) {
+    const valueMap: { [key: string]: number } = {
+        'not at all': 0, 'none': 0,
+        'slight or rare': 1, 'less than a day or two': 1, 'rarely': 1, 'a little bit': 1, 'mild': 1,
+        'mild or several days': 2, 'several days': 2, 'sometimes': 2, 'fair': 2,
+        'moderate': 3, 'more than half the days': 3, 'often': 3, 'quite a bit': 3,
+        'severe': 4, 'nearly every day': 4, 'always': 4, 'very much': 4, 'extreme': 4
+    };
+    for (const key in valueMap) {
         if (lowerAnswer.includes(key)) {
-            return answerToValueMap[key];
+            return valueMap[key];
         }
     }
     return null;
 };
 
-// For PROMIS scales (1-5)
 const answerToPROMISValue = (answer: any, isReversed: boolean = false): number | null => {
     const baseValue = getBaseValue(answer);
     if (baseValue === null) return null;
-    const score = baseValue + 1; // Convert from 0-4 range to 1-5 range
+    // PROMIS Short forms use 1-5 scale. Our questions are aligned with 0-4 base values.
+    const score = baseValue + 1;
     return isReversed ? 6 - score : score;
 };
 
-// For Somatic Symptoms (PHQ-15) scale (0-2)
 const answerToPHQ15Value = (answer: any): number | null => {
+    // PHQ-15 uses a 0-2 scale
     const baseValue = getBaseValue(answer);
     if (baseValue === null) return null;
-    if (baseValue === 0) return 0; // Not at all
+    if (baseValue === 0) return 0; // Not bothered at all
     if (baseValue === 1) return 1; // Bothered a little
     return 2; // Bothered a lot (maps from base values 2, 3, 4)
 };
 
-// For default DSM scales (0-4) like ASRM, FOCI, and Level 1 screeners
 const answerToDefaultValue = (answer: any): number | null => {
     return getBaseValue(answer);
 };
@@ -102,11 +109,11 @@ const answerToDefaultValue = (answer: any): number | null => {
 // --- Scoring Methodologies ---
 type ScoringMethod = 'SUM' | 'MAX_THRESHOLD' | 'AVERAGE';
 type AnswerMapping = 'PROMIS' | 'PHQ15' | 'DEFAULT';
+type TScoreType = 'DEPRESSION' | 'ANGER' | 'ANXIETY' | 'SLEEP' | 'NONE';
 
 interface QuestionConfig {
   id: string;
-  reverse?: boolean;
-  screener?: boolean;
+  isCore?: boolean; // Mark questions that are part of the official short form for T-Scoring
 }
 
 interface DomainConfig {
@@ -116,32 +123,34 @@ interface DomainConfig {
   questionIds: QuestionConfig[];
   scoringMethod: ScoringMethod;
   answerMapping: AnswerMapping;
+  tScoreType: TScoreType;
   referenceIntervals: ReferenceInterval[];
   individualsExperienced: { name: string; link: string; }[];
-  intendedQuestionCount?: number; // For prorating scores correctly
+  intendedQuestionCount: number; 
 }
 
-
 // --- DOMAIN CONFIGURATION ---
-// This new structure holds all the configuration for each domain, including the correct
-// scoring method and interpretation intervals derived from the provided DSM-5 PDFs.
 const domainConfigs: DomainConfig[] = [
     { 
         name: 'Depression',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
-        intendedQuestionCount: 10,
+        tScoreType: 'DEPRESSION',
+        intendedQuestionCount: 8, // Based on the 8-item PROMIS Short Form
         questionIds: [
-            { id: 'dep_1', screener: true }, { id: 'dep_2', screener: true }, { id: 'dep_3' }, { id: 'dep_4' },
-            { id: 'dep_5' }, { id: 'dep_6' }, { id: 'dep_7' }, { id: 'dep_8' },
-            { id: 'dep_9' }, { id: 'dep_10' }
+            { id: 'dep_1' }, { id: 'dep_2' },
+            // Level 2 Questions map to the PROMIS 8b form
+            { id: 'dep_3', isCore: true }, { id: 'dep_4', isCore: true }, { id: 'dep_5', isCore: true }, 
+            { id: 'dep_6', isCore: true }, { id: 'dep_7', isCore: true }, { id: 'dep_8', isCore: true }, 
+            { id: 'dep_9', isCore: true }, { id: 'dep_10', isCore: true }
         ],
-        referenceIntervals: [ // 8 questions, 1-5 scale. Range 8-40. (Prorated for 10)
-            { label: 'None to slight', min: 10, max: 27, color: 'bg-green-500' }, // T < 60
-            { label: 'Moderate', min: 28, max: 41, color: 'bg-orange-500' }, // T 60-69.9
-            { label: 'Severe', min: 42, max: 50, color: 'bg-red-500' } // T >= 70
+        referenceIntervals: [ // Based on T-Scores
+            { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+            { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+            { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+            { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
         ],
-        about: 'Assesses core symptoms of depression. Score is based on the 8-item PROMIS Emotional Distress–Depression–Short Form, expanded with additional questions.',
+        about: 'Assesses core symptoms of depression based on the PROMIS Emotional Distress–Depression–Short Form. The score is a standardized T-Score for clinical accuracy.',
         aboutLink: 'https://www.who.int/news-room/fact-sheets/detail/depression',
         individualsExperienced: [
             { name: 'Deepika Padukone', link: 'https://www.onlymyhealth.com/deepika-padukone-on-depression-and-tips-to-overcome-suicidal-thoughts-12977825587' },
@@ -152,18 +161,20 @@ const domainConfigs: DomainConfig[] = [
         name: 'Anger',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
-        intendedQuestionCount: 6,
+        tScoreType: 'ANGER',
+        intendedQuestionCount: 5, // Based on the 5-item PROMIS Short Form
         questionIds: [
-            { id: 'ang_1', screener: true }, { id: 'ang_2' }, { id: 'ang_3' }, 
-            { id: 'ang_4' }, { id: 'ang_5' }, { id: 'ang_6' }
+            { id: 'ang_1' },
+            { id: 'ang_2', isCore: true }, { id: 'ang_3', isCore: true }, { id: 'ang_4', isCore: true }, 
+            { id: 'ang_5', isCore: true }, { id: 'ang_6', isCore: true }
         ],
-        referenceIntervals: [ // 5 questions, 1-5 scale. Range 5-25. (Prorated for 6)
-            { label: 'None to slight', min: 6, max: 15, color: 'bg-green-500' }, // T < 55
-            { label: 'Mild', min: 16, max: 18, color: 'bg-yellow-500' }, // T 55-59.9
-            { label: 'Moderate', min: 19, max: 24, color: 'bg-orange-500' }, // T 60-69.9
-            { label: 'Severe', min: 25, max: 30, color: 'bg-red-500' } // T >= 70
+        referenceIntervals: [ // Based on T-Scores
+            { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+            { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+            { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+            { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
         ],
-        about: 'Measures feelings of anger and irritability. Score is based on the 5-item PROMIS Emotional Distress–Anger–Short Form, expanded with an additional question.',
+        about: 'Measures feelings of anger based on the PROMIS Emotional Distress–Anger–Short Form. The score is a standardized T-Score for clinical accuracy.',
         aboutLink: 'https://www.apa.org/topics/anger/control',
         individualsExperienced: [
             { name: 'Russell Brand', link: 'https://www.healthline.com/health/celebrities-with-bipolar-disorder' },
@@ -174,16 +185,18 @@ const domainConfigs: DomainConfig[] = [
         name: 'Mania',
         scoringMethod: 'SUM',
         answerMapping: 'DEFAULT',
-        intendedQuestionCount: 7,
+        tScoreType: 'NONE',
+        intendedQuestionCount: 5, // Based on the 5-item ASRM
         questionIds: [
-            { id: 'man_1', screener: true }, { id: 'man_2', screener: true }, { id: 'man_3' }, { id: 'man_4' }, 
-            { id: 'man_5' }, { id: 'man_6' }, { id: 'man_7' }
+            { id: 'man_1' }, { id: 'man_2' },
+            { id: 'man_3', isCore: true }, { id: 'man_4', isCore: true }, { id: 'man_5', isCore: true }, 
+            { id: 'man_6', isCore: true }, { id: 'man_7', isCore: true }
         ],
-        referenceIntervals: [ // 5 questions, 0-4 scale. Range 0-20. (Prorated for 7)
-            { label: 'Low Probability', min: 0, max: 8, color: 'bg-green-500' },
-            { label: 'High Probability', min: 9, max: 28, color: 'bg-red-500' }
+        referenceIntervals: [ // Corrected based on ASRM PDF
+            { label: 'Low Probability', min: 0, max: 5, color: 'bg-green-500' },
+            { label: 'High Probability', min: 6, max: null, color: 'bg-red-500' }
         ],
-        about: 'Assesses symptoms of mania or hypomania using the Altman Self-Rating Mania Scale. A score of 6 or higher suggests a high probability of a manic or hypomanic condition.',
+        about: 'Assesses symptoms of mania or hypomania using the Altman Self-Rating Mania Scale (ASRM). A score of 6 or higher suggests a high probability of a manic or hypomanic condition.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/bipolar-disorder',
         individualsExperienced: [
             { name: 'Mariah Carey', link: 'https://www.webmd.com/bipolar-disorder/ss/slideshow-celebrities-bipolar-disorder' },
@@ -194,19 +207,21 @@ const domainConfigs: DomainConfig[] = [
         name: 'Anxiety',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
-        intendedQuestionCount: 10,
+        tScoreType: 'ANXIETY',
+        intendedQuestionCount: 7, // Based on the 7-item PROMIS Short Form
         questionIds: [
-            { id: 'anx_1', screener: true }, { id: 'anx_2', screener: true }, { id: 'anx_3', screener: true }, { id: 'anx_4' },
-            { id: 'anx_5' }, { id: 'anx_6' }, { id: 'anx_7' }, { id: 'anx_8' },
-            { id: 'anx_9' }, { id: 'anx_10' }
+            { id: 'anx_1' }, { id: 'anx_2' }, { id: 'anx_3' },
+            { id: 'anx_4', isCore: true }, { id: 'anx_5', isCore: true }, { id: 'anx_6', isCore: true }, 
+            { id: 'anx_7', isCore: true }, { id: 'anx_8', isCore: true }, { id: 'anx_9', isCore: true }, 
+            { id: 'anx_10', isCore: true }
         ],
-        referenceIntervals: [ // 7 questions, 1-5 scale. Range 7-35. (Prorated for 10)
-            { label: 'None to slight', min: 10, max: 21, color: 'bg-green-500' }, // T < 55
-            { label: 'Mild', min: 22, max: 27, color: 'bg-yellow-500' }, // T 55-59.9
-            { label: 'Moderate', min: 28, max: 38, color: 'bg-orange-500' }, // T 60-69.9
-            { label: 'Severe', min: 39, max: 50, color: 'bg-red-500' } // T >= 70
+        referenceIntervals: [ // Based on T-Scores
+            { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+            { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+            { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+            { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
         ],
-        about: 'Evaluates common symptoms of anxiety. Score is based on the 7-item PROMIS Emotional Distress–Anxiety–Short Form, expanded with additional questions.',
+        about: 'Evaluates common symptoms of anxiety based on the PROMIS Emotional Distress–Anxiety–Short Form. The score is a standardized T-Score for clinical accuracy.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/anxiety-disorders',
         individualsExperienced: [
             { name: 'Adele', link: 'https://www.gmanetwork.com/news/lifestyle/healthandwellness/806235/adele-says-working-out-helped-with-her-anxiety-it-was-never-about-losing-weight/story/' },
@@ -217,19 +232,21 @@ const domainConfigs: DomainConfig[] = [
         name: 'Somatic Symptoms',
         scoringMethod: 'SUM',
         answerMapping: 'PHQ15',
-        intendedQuestionCount: 17,
+        tScoreType: 'NONE',
+        intendedQuestionCount: 15, // Based on PHQ-15
         questionIds: [
-            { id: 'som_1', screener: true }, { id: 'som_2', screener: true }, { id: 'som_3' }, { id: 'som_4' }, 
-            { id: 'som_5' }, { id: 'som_6' }, { id: 'som_7' }, { id: 'som_8' }, 
-            { id: 'som_9' }, { id: 'som_10' }, { id: 'som_11' }, { id: 'som_12' },
-            { id: 'som_13' }, { id: 'som_14' }, { id: 'som_15' }, { id: 'som_16' }, 
-            { id: 'som_17' }
+            { id: 'som_1' }, { id: 'som_2' },
+            { id: 'som_3', isCore: true }, { id: 'som_4', isCore: true }, { id: 'som_5', isCore: true },
+            { id: 'som_6', isCore: true }, { id: 'som_7', isCore: true }, { id: 'som_8', isCore: true },
+            { id: 'som_9', isCore: true }, { id: 'som_10', isCore: true }, { id: 'som_11', isCore: true },
+            { id: 'som_12', isCore: true }, { id: 'som_13', isCore: true }, { id: 'som_14', isCore: true },
+            { id: 'som_15', isCore: true }, { id: 'som_16', isCore: true }, { id: 'som_17', isCore: true }
         ],
-        referenceIntervals: [ // 15 questions, 0-2 scale. Range 0-30. (Prorated for 17)
-            { label: 'Minimal', min: 0, max: 5, color: 'bg-green-500' },
-            { label: 'Low', min: 6, max: 11, color: 'bg-yellow-500' },
-            { label: 'Medium', min: 12, max: 16, color: 'bg-orange-500' },
-            { label: 'High', min: 17, max: 34, color: 'bg-red-500' }
+        referenceIntervals: [ // Corrected based on PHQ-15 PDF
+            { label: 'Minimal', min: 0, max: 4, color: 'bg-green-500' },
+            { label: 'Low', min: 5, max: 9, color: 'bg-yellow-500' },
+            { label: 'Medium', min: 10, max: 14, color: 'bg-orange-500' },
+            { label: 'High', min: 15, max: null, color: 'bg-red-500' }
         ],
         about: 'Focuses on physical symptoms that may be related to psychological distress, based on the Patient Health Questionnaire 15 (PHQ-15).',
         aboutLink: 'https://www.psychiatry.org/patients-families/somatic-symptom-disorder/what-is-somatic-symptom-disorder',
@@ -242,10 +259,12 @@ const domainConfigs: DomainConfig[] = [
         name: 'Suicidal Ideation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'sui_1' }],
+        tScoreType: 'NONE',
+        intendedQuestionCount: 1,
+        questionIds: [{ id: 'sui_1', isCore: true }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
-            { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
+            { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
         ],
         about: 'Screens for thoughts of self-harm. A score of "Slight" or greater indicates need for further inquiry.',
         aboutLink: 'https://988lifeline.org/',
@@ -258,10 +277,12 @@ const domainConfigs: DomainConfig[] = [
         name: 'Psychosis',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'psy_1' }, { id: 'psy_2' }],
+        tScoreType: 'NONE',
+        intendedQuestionCount: 2,
+        questionIds: [{ id: 'psy_1', isCore: true }, { id: 'psy_2', isCore: true }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
-            { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
+            { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
         ],
         about: 'Identifies unusual thoughts or perceptions. A score of "Slight" or greater indicates need for further inquiry.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/schizophrenia/raise/what-is-psychosis',
@@ -274,25 +295,21 @@ const domainConfigs: DomainConfig[] = [
         name: 'Sleep Problems',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
-        intendedQuestionCount: 8,
+        tScoreType: 'SLEEP',
+        intendedQuestionCount: 8, // Based on the 8-item PROMIS Short Form
         questionIds: [
-            { id: 'slp_1', screener: true },
-            { id: 'slp_2', reverse: false }, // restless
-            { id: 'slp_3', reverse: true }, // satisfied
-            { id: 'slp_4', reverse: true }, // refreshing
-            { id: 'slp_5', reverse: false }, // difficulty falling
-            { id: 'slp_6', reverse: false }, // trouble staying
-            { id: 'slp_7' },
-            { id: 'slp_8', reverse: true }, // got enough
-            { id: 'slp_9', reverse: true }  // quality was
+            { id: 'slp_1' },
+            { id: 'slp_2', isCore: true }, { id: 'slp_3', isCore: true }, { id: 'slp_4', isCore: true },
+            { id: 'slp_5', isCore: true }, { id: 'slp_6', isCore: true }, { id: 'slp_7', isCore: true },
+            { id: 'slp_8', isCore: true }, { id: 'slp_9', isCore: true }
         ],
-        referenceIntervals: [ // Range for 8 questions is 8-40. Score will be prorated.
-            { label: 'None to slight', min: 8, max: 25, color: 'bg-green-500' }, // T < 55
-            { label: 'Mild', min: 26, max: 28, color: 'bg-yellow-500' }, // T 55-59.9
-            { label: 'Moderate', min: 29, max: 36, color: 'bg-orange-500' }, // T 60-69.9
-            { label: 'Severe', min: 37, max: 40, color: 'bg-red-500' } // T >= 70
+        referenceIntervals: [ // Based on T-Scores
+            { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+            { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+            { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+            { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
         ],
-        about: 'Evaluates sleep quality based on the 8-item PROMIS Sleep Disturbance scale. Some questions are reverse-scored.',
+        about: 'Evaluates sleep quality based on the 8-item PROMIS Sleep Disturbance scale. The score is a standardized T-Score for clinical accuracy.',
         aboutLink: 'https://www.sleepfoundation.org/insomnia',
         individualsExperienced: [
             { name: 'Jimmy Kimmel', link: 'https://www.rxwiki.com/slideshow/celebrities-who-have-trouble-sleeping/jimmy-kimmel' },
@@ -302,10 +319,12 @@ const domainConfigs: DomainConfig[] = [
         name: 'Memory',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'mem_1' }],
+        tScoreType: 'NONE',
+        intendedQuestionCount: 1,
+        questionIds: [{ id: 'mem_1', isCore: true }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-            { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+            { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
         about: 'Assesses memory problems. A score of "Mild" or greater indicates need for further inquiry.',
         aboutLink: 'https://www.nia.nih.gov/health/memory-forgetfulness-and-aging-whats-normal-and-whats-not',
@@ -317,13 +336,14 @@ const domainConfigs: DomainConfig[] = [
         name: 'Repetitive Thoughts and Behaviours',
         scoringMethod: 'AVERAGE',
         answerMapping: 'DEFAULT',
-        intendedQuestionCount: 7,
+        tScoreType: 'NONE',
+        intendedQuestionCount: 5, // Based on 5-item FOCI scale
         questionIds: [
-            { id: 'rep_1', screener: true }, { id: 'rep_2', screener: true }, { id: 'rep_3' }, 
-            { id: 'rep_4' }, { id: 'rep_5' }, { id: 'rep_6' }, 
-            { id: 'rep_7' }
+            { id: 'rep_1' }, { id: 'rep_2' },
+            { id: 'rep_3', isCore: true }, { id: 'rep_4', isCore: true }, { id: 'rep_5', isCore: true }, 
+            { id: 'rep_6', isCore: true }, { id: 'rep_7', isCore: true }
         ],
-        referenceIntervals: [ // 5 questions, 0-4 scale. Average range 0-4. (Prorated for 7)
+        referenceIntervals: [ // Based on average of 0-4 scores
             { label: 'None', min: 0, max: 0.9, color: 'bg-green-500' },
             { label: 'Mild', min: 1, max: 1.9, color: 'bg-yellow-500' },
             { label: 'Moderate', min: 2, max: 2.9, color: 'bg-orange-500' },
@@ -340,10 +360,12 @@ const domainConfigs: DomainConfig[] = [
         name: 'Dissociation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'dis_1' }],
+        tScoreType: 'NONE',
+        intendedQuestionCount: 1,
+        questionIds: [{ id: 'dis_1', isCore: true }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-            { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+            { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
         about: 'Measures experiences of detachment from reality. A score of "Mild" or greater indicates need for further inquiry.',
         aboutLink: 'https://www.nami.org/About-Mental-Illness/Mental-Health-Conditions/Dissociative-Disorders',
@@ -355,10 +377,12 @@ const domainConfigs: DomainConfig[] = [
         name: 'Personality Functioning',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
-        questionIds: [{ id: 'per_1' }, { id: 'per_2' }],
+        tScoreType: 'NONE',
+        intendedQuestionCount: 2,
+        questionIds: [{ id: 'per_1', isCore: true }, { id: 'per_2', isCore: true }],
         referenceIntervals: [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-            { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+            { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
         about: 'Examines long-term patterns in self-perception and relationships. A score of "Mild" or greater indicates need for further inquiry.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/borderline-personality-disorder',
@@ -368,100 +392,96 @@ const domainConfigs: DomainConfig[] = [
     },
 ];
 
-const getAnswerValue = (answer: any, mapping: AnswerMapping, isReversed?: boolean): number | null => {
+const getAnswerValue = (answer: any, mapping: AnswerMapping, questionDetails: any): number | null => {
+    // For sleep questions, some are reverse-scored
+    if (mapping === 'PROMIS' && (questionDetails.reverse || (questionDetails.customAnswers && questionDetails.customAnswers.isReversed))) {
+        return answerToPROMISValue(answer, true);
+    }
+
     switch (mapping) {
-        case 'PROMIS':
-            return answerToPROMISValue(answer, isReversed);
-        case 'PHQ15':
-            return answerToPHQ15Value(answer);
-        case 'DEFAULT':
-        default:
-            return answerToDefaultValue(answer);
+        case 'PROMIS': return answerToPROMISValue(answer);
+        case 'PHQ15': return answerToPHQ15Value(answer);
+        default: return answerToDefaultValue(answer);
     }
 };
 
-const MINIMUM_COMPLETION_RATIO = 0.8; // Require 80% of questions for a valid score
+const MINIMUM_COMPLETION_RATIO = 0.75;
 
-function calculateScore(config: DomainConfig, allAnswers: { [questionId: string]: any }): number | null {
-    const screenerQuestions = config.questionIds.filter(q => q.screener);
+function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: string]: any }): { rawScore: number | null, finalScore: number | null, tScore: number | null } {
+    const coreQuestionIds = config.questionIds.filter(q => q.isCore);
 
-    if (screenerQuestions.length > 0) {
-        const negativeValue = config.answerMapping === 'PROMIS' ? 1 : 0; // "Not at all"
-        const allScreenersNegative = screenerQuestions.every(q => {
-            const answerValue = getAnswerValue(allAnswers[q.id], config.answerMapping, q.reverse);
-            return answerValue !== null && answerValue <= negativeValue;
-        });
+    const numericAnswers = coreQuestionIds
+        .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping, q))
+        .filter((val): val is number => val !== null);
 
-        if (allScreenersNegative) {
-            const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
-            if (config.scoringMethod === 'AVERAGE') return negativeValue;
-            if (config.scoringMethod === 'SUM') return negativeValue * totalQuestions;
-            return negativeValue;
+    if ((numericAnswers.length / config.intendedQuestionCount) < MINIMUM_COMPLETION_RATIO) {
+        return { rawScore: null, finalScore: null, tScore: null };
+    }
+
+    let rawScore: number | null = null;
+    let tScore: number | null = null;
+    let finalScore: number | null = null;
+
+    if (config.scoringMethod === 'MAX_THRESHOLD') {
+        rawScore = numericAnswers.length > 0 ? Math.max(...numericAnswers) : 0;
+        finalScore = rawScore;
+    } else {
+        const sum = numericAnswers.reduce((acc, val) => acc + val, 0);
+        
+        if (config.scoringMethod === 'AVERAGE') {
+            rawScore = parseFloat((sum / numericAnswers.length).toFixed(1));
+            finalScore = rawScore;
+        } else { // SUM
+            const proratedRawScore = Math.round((sum / numericAnswers.length) * config.intendedQuestionCount);
+            rawScore = proratedRawScore;
+            
+            if (config.tScoreType !== 'NONE') {
+                const tMap = {
+                    'DEPRESSION': depressionTScoreMap,
+                    'ANGER': angerTScoreMap,
+                    'ANXIETY': anxietyTScoreMap,
+                    'SLEEP': sleepTScoreMap
+                }[config.tScoreType];
+                tScore = convertRawToTScore(proratedRawScore, tMap);
+                finalScore = tScore;
+            } else {
+                finalScore = rawScore;
+            }
         }
     }
 
-    const numericAnswers = config.questionIds
-        .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping, q.reverse))
-        .filter((val): val is number => val !== null);
-
-    const answeredQuestions = numericAnswers.length;
-    if (answeredQuestions === 0) return null;
-
-    if (config.scoringMethod === 'MAX_THRESHOLD') {
-        return Math.max(...numericAnswers);
-    }
-    
-    // For SUM and AVERAGE methods, enforce a completion threshold
-    const totalQuestions = config.intendedQuestionCount || config.questionIds.length;
-    if ((answeredQuestions / totalQuestions) < MINIMUM_COMPLETION_RATIO) {
-        return null; // Not enough questions were answered for a reliable score
-    }
-
-    const rawSum = numericAnswers.reduce((sum, val) => sum + val, 0);
-
-    if (config.scoringMethod === 'AVERAGE') {
-        // The average is based on the number of questions answered, which is valid.
-        return parseFloat((rawSum / answeredQuestions).toFixed(1));
-    }
-    
-    // Default to SUM scoring, prorating the score if necessary.
-    // This is now safe because we've already checked the completion threshold.
-    return Math.round((rawSum / answeredQuestions) * totalQuestions);
+    return { rawScore, finalScore, tScore };
 }
 
 function getInterpretation(score: number | null, intervals: ReferenceInterval[]): string {
     if (score === null) {
         return "Incomplete Assessment";
     }
-    for (const interval of [...intervals].reverse()) {
-        if (score >= interval.min) {
-            if (interval.max === null || score <= interval.max) {
-                return interval.label;
-            }
+    for (const interval of intervals) {
+        if (score >= interval.min && (interval.max === null || score <= interval.max)) {
+            return interval.label;
         }
-    }
-    const lowestInterval = intervals[0];
-    if (lowestInterval && (lowestInterval.max === null || score <= lowestInterval.max)) {
-      return lowestInterval.label;
     }
     return "Not Classified";
 }
 
 export function generateReportFromSubmission(submission: AssessmentSubmission): IndividualData {
     const calculatedDomains: Domain[] = domainConfigs.map(config => {
-        const score = calculateScore(config, submission.answers);
-        const interpretation = getInterpretation(score, config.referenceIntervals);
+        const { rawScore, finalScore, tScore } = calculateDomainResult(config, submission.answers);
+        const interpretation = getInterpretation(finalScore, config.referenceIntervals);
 
         return {
             name: config.name,
             about: config.about,
             aboutLink: config.aboutLink,
-            score: score,
+            score: finalScore,
+            rawScore: rawScore,
+            tScore: tScore,
             userInterpretation: interpretation,
             result: interpretation,
             referenceIntervals: config.referenceIntervals,
             individualsExperienced: config.individualsExperienced,
-            insightsAndSupport: '', // To be filled by AI
+            insightsAndSupport: '',
         };
     });
 

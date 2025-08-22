@@ -1,4 +1,29 @@
 
+export interface AnswerOption {
+    text: string;
+    value: number;
+}
+
+export interface Question {
+    id: string;
+    text: string;
+    mandatory: boolean;
+    condition?: {
+        triggerIds: string[];
+        threshold: number;
+    };
+    answerOptions?: AnswerOption[];
+    customAnswers?: {
+        isReversed: boolean;
+    };
+}
+
+export interface AssessmentSection {
+    title: string;
+    description: string;
+    questions: Question[];
+}
+
 export interface ReferenceInterval {
   label: string;
   min: number;
@@ -16,7 +41,9 @@ export interface Domain {
   about: string;
   aboutLink: string;
   result: string;
-  score: number | null;
+  score: number | null; // This will be the T-Score for PROMIS domains, raw score for others
+  rawScore?: number | null;
+  tScore?: number | null;
   userInterpretation: string;
   referenceIntervals: ReferenceInterval[];
   insightsAndSupport: string;
