@@ -1,6 +1,6 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, type PostgrestError, type PostgrestSingleResponse } from '@supabase/supabase-js';
+import { createClient, type PostgrestSingleResponse } from '@supabase/supabase-js';
 import type { IndividualData } from './_lib/types';
 
 // Initialize Supabase client

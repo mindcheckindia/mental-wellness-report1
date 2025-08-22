@@ -135,7 +135,7 @@ const App: React.FC = () => {
                             <h2 className="text-3xl font-bold text-blue-800 mb-6 border-b pb-3 border-blue-300">Your Detailed Results</h2>
                             <div className="space-y-8 mt-8">
                                 {reportData.domains.map((domain, index) => (
-                                    <DomainCard key={index} domain={domain} index={index} firstName={reportData.firstName} />
+                                    <DomainCard key={index} domain={domain} index={index} />
                                 ))}
                             </div>
                             <IndividualsDisclaimer />

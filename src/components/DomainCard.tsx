@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Domain } from '../types';
 import { getStylesForScore } from '../utils/helpers';
@@ -9,10 +8,9 @@ import ScoreBar from './ScoreBar';
 interface DomainCardProps {
   domain: Domain;
   index: number;
-  firstName: string;
 }
 
-const DomainCard: React.FC<DomainCardProps> = ({ domain, index, firstName }) => {
+const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
   // Get all style classes from the centralized helper function
   const { textColor, borderColor } = getStylesForScore(domain.score, domain.referenceIntervals);
   const IconComponent = domainIcons[domain.name];
