@@ -120,13 +120,20 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
 
     const isCurrentSectionAnswered = () => {
         if (step === 0) {
-             return userDetails.firstName.trim() !== '' && userDetails.email.trim() !== '';
+            return userDetails.firstName.trim() !== '' && userDetails.email.trim() !== '';
         }
         const currentSection = visibleSections[step - 1];
         if (!currentSection) return false;
-        
+
+        // Get all questions currently visible on the page.
         const visibleQuestions = getVisibleQuestionsForSection(currentSection);
-        return visibleQuestions.every(q => answers[q.id] !== undefined);
+        
+        // From that set, filter down to only those explicitly marked as mandatory.
+        const mandatoryQuestionsToCheck = visibleQuestions.filter(q => q.mandatory);
+    
+        // The user can proceed if they have answered all mandatory questions in the current section.
+        // They will not be blocked by optional follow-up questions that become visible.
+        return mandatoryQuestionsToCheck.every(q => answers[q.id] !== undefined);
     };
 
 
