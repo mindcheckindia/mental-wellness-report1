@@ -1,7 +1,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, type PostgrestSingleResponse } from '@supabase/supabase-js';
-import type { IndividualData } from './_lib/types';
+import type { IndividualData } from './_lib/types.ts';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
