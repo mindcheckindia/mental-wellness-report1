@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Domain } from '../types';
 import { getStylesForScore } from '../utils/helpers';
@@ -13,9 +12,10 @@ const AtAGlance: React.FC<{ domains: Domain[] }> = ({ domains }) => {
                 {domains.map((domain, index) => {
                     const IconComponent = domainIcons[domain.name];
                     const { bgColor, textColor, iconTextColor } = getStylesForScore(domain.score, domain.referenceIntervals);
+                    const ariaLabel = `${domain.name}: ${domain.userInterpretation}`;
                     
                     return (
-                        <div key={index} title={`${domain.name}: ${domain.userInterpretation}`} className="flex flex-col items-center">
+                        <div key={index} title={ariaLabel} aria-label={ariaLabel} className="flex flex-col items-center">
                             <div className={`w-14 h-14 rounded-full flex items-center justify-center ${bgColor}`}>
                                 {IconComponent ? <IconComponent className={`h-7 w-7 ${iconTextColor}`} /> : <div className={`h-7 w-7`}></div>}
                             </div>

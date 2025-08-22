@@ -1,8 +1,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { generateReportFromJotform } from './_lib/logic.ts';
-import type { IndividualData } from './_lib/types.ts';
+import { generateReportFromSubmission } from '../lib/logic.ts';
+import type { IndividualData, AssessmentSubmission } from '../lib/types.ts';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -34,7 +34,7 @@ export default async function handler(
     const submissionId = `SUB-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     // Adapt the incoming data to the format expected by the scoring logic function
-    const submissionData = {
+    const submissionData: AssessmentSubmission = {
         submissionId,
         firstName,
         lastName: lastName || '',
@@ -43,7 +43,7 @@ export default async function handler(
         answers,
     };
 
-    const reportData: IndividualData = generateReportFromJotform(submissionData);
+    const reportData: IndividualData = generateReportFromSubmission(submissionData);
 
     const { error: dbError } = await supabase
       .from('reports')

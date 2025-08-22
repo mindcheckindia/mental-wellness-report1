@@ -36,3 +36,14 @@ export interface GlobalResource {
     text: string;
     link: string;
 }
+
+// This interface represents the data structure of a successfully submitted form
+// from the frontend, which is then processed by the backend logic.
+export interface AssessmentSubmission {
+  submissionId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  assessmentDate: string;
+  answers: { [questionId: string]: any };
+}

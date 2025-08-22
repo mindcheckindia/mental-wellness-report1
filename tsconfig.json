@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -22,6 +23,6 @@
 
     "esModuleInterop": true
   },
-  "include": ["src", "api"],
+  "include": ["src", "api", "lib"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

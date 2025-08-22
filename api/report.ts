@@ -1,7 +1,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, type PostgrestSingleResponse } from '@supabase/supabase-js';
-import type { IndividualData } from './_lib/types.ts';
+import { createClient } from '@supabase/supabase-js';
+import type { IndividualData } from '../lib/types.ts';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -39,11 +39,11 @@ export default async function handler(
   }
 
   try {
-    const { data: report, error }: PostgrestSingleResponse<ReportRow> = await supabase
+    const { data: report, error } = await supabase
       .from('reports')
       .select('*')
       .eq('submissionId', id)
-      .single();
+      .single<ReportRow>();
 
     if (error) {
       // The .single() method returns an error if multiple rows are found.

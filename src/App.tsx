@@ -85,6 +85,7 @@ const App: React.FC = () => {
             if (typeof html2pdf !== 'undefined') {
                 html2pdf().set(opt).from(element).save().then(() => setIsGeneratingPdf(false));
             } else {
+                console.error('html2pdf library is not available.');
                 setIsGeneratingPdf(false);
             }
         } else {
@@ -156,7 +157,7 @@ const App: React.FC = () => {
         );
     }
 
-    // Default View: The new integrated assessment form.
+    // Default View: The integrated assessment form.
     return <AssessmentForm />;
 };
 

@@ -1,3 +1,4 @@
+
 import { IndividualData } from '../types';
 
 /**
@@ -5,8 +6,6 @@ import { IndividualData } from '../types';
  * This function fetches the pre-calculated report data from our backend.
  */
 export const fetchDynamicReportData = async (submissionId: string): Promise<IndividualData> => {
-    console.log(`Fetching live report for Submission ID: ${submissionId}`);
-
     // This is a relative URL that points to our Vercel backend function.
     const response = await fetch(`/api/report?id=${submissionId}`);
 
@@ -28,7 +27,6 @@ export const fetchDynamicReportData = async (submissionId: string): Promise<Indi
 
     try {
         const data: IndividualData = await response.json();
-        console.log('Successfully fetched base report data from the backend.');
         return data;
     } catch (e) {
         console.error("Failed to parse successful response from /api/report as JSON.", e);
@@ -47,8 +45,6 @@ export const fetchDynamicReportData = async (submissionId: string): Promise<Indi
  * @returns An array of strings, where each string is an AI-generated insight.
  */
 export const fetchInsights = async (userData: IndividualData): Promise<string[]> => {
-    console.log('Requesting AI insights from secure backend endpoint...');
-    
     const response = await fetch('/api/generate-insights', {
         method: 'POST',
         headers: {
@@ -73,7 +69,6 @@ export const fetchInsights = async (userData: IndividualData): Promise<string[]>
     
     try {
         const data = await response.json();
-        console.log('Successfully received AI insights.');
         return data.insights; // The backend will return an object like { insights: [...] }
     } catch (e) {
         console.error("Failed to parse successful response from /api/generate-insights as JSON.", e);
