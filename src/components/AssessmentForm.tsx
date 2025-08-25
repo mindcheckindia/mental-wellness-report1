@@ -2,12 +2,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
-import { AssessmentSection, Question, AnswerOption } from '../types';
+import { AnswerOption } from '../types';
 import { shuffleArray } from '../utils/helpers';
 
 const ProgressTracker = ({ part, progress }: { part: number, progress: number }) => {
-    const part1Complete = part > 1 || (part === 1 && progress === 100);
-
     return (
         <div className="w-full mb-8 text-white">
              <div className="grid grid-cols-2 gap-4 text-center mb-2">
@@ -166,7 +164,7 @@ const AssessmentForm: React.FC = () => {
                                             <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
                                             <div className="mt-4 space-y-3">
                                                 {(shuffledOptions[q.id] || q.answerOptions).map(opt => (
-                                                    <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all cursor-pointer ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
+                                                    <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
                                                         <input type="radio" name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={() => handleAnswerChange(q.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
                                                         <span className={`ml-4 text-base ${answers[q.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
                                                     </label>
@@ -207,7 +205,7 @@ const AssessmentForm: React.FC = () => {
                                                 <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
                                                 <div className="mt-4 space-y-3">
                                                     {(shuffledOptions[q.id] || q.answerOptions).map(opt => (
-                                                        <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all cursor-pointer ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
+                                                        <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
                                                             <input type="radio" name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={() => handleAnswerChange(q.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
                                                             <span className={`ml-4 text-base ${answers[q.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
                                                         </label>

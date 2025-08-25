@@ -16,12 +16,15 @@ const AccordionSection: React.FC<{
     isOpen: boolean;
     onToggle: () => void;
     children: React.ReactNode;
-}> = ({ title, icon, isOpen, onToggle, children }) => (
+    uniqueId: string;
+}> = ({ title, icon, isOpen, onToggle, children, uniqueId }) => (
     <div className="border-t border-slate-200">
         <button
             onClick={onToggle}
             className="w-full flex justify-between items-center py-4 text-left text-lg font-semibold text-slate-800 hover:bg-slate-50 rounded-md"
             aria-expanded={isOpen}
+            aria-controls={`accordion-content-${uniqueId}`}
+            id={`accordion-button-${uniqueId}`}
         >
             <div className="flex items-center">
                 {icon}
@@ -30,7 +33,12 @@ const AccordionSection: React.FC<{
             <ChevronDownIcon className={`h-6 w-6 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         {isOpen && (
-            <div className="pb-4 pl-10 text-slate-700 text-base leading-relaxed">
+            <div
+                id={`accordion-content-${uniqueId}`}
+                role="region"
+                aria-labelledby={`accordion-button-${uniqueId}`}
+                className="pb-4 pl-10 text-slate-700 text-base leading-relaxed"
+            >
                 {children}
             </div>
         )}
@@ -46,6 +54,8 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
     const [isAboutOpen, setAboutOpen] = useState(false);
     const [isInsightsOpen, setInsightsOpen] = useState(true);
     const [isFiguresOpen, setFiguresOpen] = useState(false);
+    
+    const domainId = domain.name.replace(/\s+/g, '-');
 
     return (
         <div id={`domain-${index}`} className={`bg-white rounded-xl shadow-md border border-slate-200 border-l-4 transition-shadow duration-300 hover:shadow-lg ${borderColor}`}>
@@ -81,7 +91,8 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                         title="Insights & Support"
                         icon={<LightbulbIcon className="h-6 w-6 text-amber-500" />}
                         isOpen={isInsightsOpen}
-                        onToggle={() => setInsightsOpen(!isInsightsOpen)}>
+                        onToggle={() => setInsightsOpen(!isInsightsOpen)}
+                        uniqueId={`insights-${domainId}`}>
                         <p className="whitespace-pre-wrap">{domain.insightsAndSupport}</p>
                     </AccordionSection>
                     
@@ -89,7 +100,8 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                         title="About This Domain"
                         icon={<InformationCircleIcon className="h-6 w-6 text-sky-500" />}
                         isOpen={isAboutOpen}
-                        onToggle={() => setAboutOpen(!isAboutOpen)}>
+                        onToggle={() => setAboutOpen(!isAboutOpen)}
+                        uniqueId={`about-${domainId}`}>
                         <p>{domain.about}</p>
                         {domain.aboutLink && (
                            <a href={domain.aboutLink} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline text-sm font-medium mt-2 inline-block">
@@ -102,7 +114,8 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                         title="Notable Figures with Similar Experiences"
                         icon={<UsersIcon className="h-6 w-6 text-teal-500" />}
                         isOpen={isFiguresOpen}
-                        onToggle={() => setFiguresOpen(!isFiguresOpen)}>
+                        onToggle={() => setFiguresOpen(!isFiguresOpen)}
+                        uniqueId={`figures-${domainId}`}>
                          {domain.individualsExperienced && domain.individualsExperienced.length > 0 ? (
                              <div className="space-y-1 text-base">
                                  {domain.individualsExperienced.map((person, pIndex) => (

@@ -389,43 +389,44 @@ function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: 
     const numericAnswers = coreQuestionIds
         .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping))
         .filter((val): val is number => val !== null);
-
-    // If no Level 2 answers, check if it's because the L1 trigger wasn't met.
-    if (numericAnswers.length === 0 && config.l1Trigger) {
-        const triggerMet = config.l1Trigger.questionIds.some(id => (allAnswers[id] ?? 0) >= config.l1Trigger.threshold);
-        if (!triggerMet) {
-            // L2 not triggered, so assign a healthy/low score.
-            const lowScore = config.referenceIntervals[0].min;
-            let tScore: number | null = null;
-            let finalScore = lowScore;
-
-            if (config.tScoreType !== 'NONE') {
-                tScore = 45; // A safe, low T-Score
-                finalScore = tScore;
-            } else if (config.scoringMethod === 'AVERAGE') {
-                finalScore = 0; // For FOCI, average is 0 if not triggered
-            }
-            
-            return { rawScore: finalScore, finalScore, tScore };
-        }
-        // If trigger was met but no answers, it's incomplete.
-        return { rawScore: null, finalScore: null, tScore: null };
-    }
-
-
-    if (numericAnswers.length === 0 && config.scoringMethod !== 'MAX_THRESHOLD') {
-        // This handles L1-only domains that might still be empty
-        return { rawScore: null, finalScore: null, tScore: null };
-    }
     
-    // For MAX_THRESHOLD, numericAnswers might be from L1 questions.
-    if (numericAnswers.length === 0 && config.scoringMethod === 'MAX_THRESHOLD') {
-        const l1Answers = config.questionIds
-            .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping))
-            .filter((val): val is number => val !== null);
-        if (l1Answers.length === 0) return { rawScore: null, finalScore: null, tScore: null };
-        const score = Math.max(...l1Answers);
-        return { rawScore: score, finalScore: score, tScore: null };
+    // If no Level 2 answers were provided...
+    if (numericAnswers.length === 0) {
+        // ...check if it's because the L1 trigger wasn't met.
+        if (config.l1Trigger) {
+            const triggerMet = config.l1Trigger.questionIds.some(id => (allAnswers[id] ?? 0) >= config.l1Trigger.threshold);
+            if (!triggerMet) {
+                // L2 not triggered, so assign a healthy/low score.
+                const lowScore = config.referenceIntervals[0].min;
+                let tScore: number | null = null;
+                let finalScore = lowScore;
+
+                if (config.tScoreType !== 'NONE') {
+                    tScore = 45; // A safe, low T-Score
+                    finalScore = tScore;
+                } else if (config.scoringMethod === 'AVERAGE') {
+                    finalScore = 0; // For FOCI, average is 0 if not triggered
+                }
+                
+                return { rawScore: finalScore, finalScore, tScore };
+            }
+        }
+        
+        // Handle L1-only domains (like Self-Harm) that might not have L2 triggers.
+        // Also catches cases where L2 was triggered but no answers were given.
+        if (config.scoringMethod === 'MAX_THRESHOLD') {
+            const l1Answers = config.questionIds
+                .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping))
+                .filter((val): val is number => val !== null);
+
+            if (l1Answers.length > 0) {
+                const score = Math.max(...l1Answers);
+                return { rawScore: score, finalScore: score, tScore: null };
+            }
+        }
+        
+        // If no answers for L2 and it's not a simple L1 domain, it's incomplete.
+        return { rawScore: null, finalScore: null, tScore: null };
     }
 
     if (config.scoringMethod !== 'MAX_THRESHOLD' && (numericAnswers.length / config.intendedQuestionCount) < MINIMUM_COMPLETION_RATIO) {
@@ -466,6 +467,7 @@ function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: 
 
     return { rawScore, finalScore, tScore };
 }
+
 
 function getInterpretation(score: number | null, intervals: ReferenceInterval[]): string {
     if (score === null) {

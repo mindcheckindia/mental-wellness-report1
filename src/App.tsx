@@ -15,6 +15,8 @@ import VerificationSeal from './components/VerificationSeal';
 import AssessmentForm from './components/AssessmentForm';
 import { fetchDynamicReportData, fetchInsights } from './services/api';
 import { BrandIcon } from './components/icons';
+import ReportActions from './components/ReportActions';
+import NextSteps from './components/NextSteps';
 
 declare const html2pdf: any;
 
@@ -70,6 +72,32 @@ const App: React.FC = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if (!reportData || !reportRef.current) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                    entry.target.classList.remove('opacity-0');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        const sections = reportRef.current?.querySelectorAll('.report-section');
+        sections?.forEach(section => {
+            section.classList.add('opacity-0'); // Start hidden
+            observer.observe(section);
+        });
+
+        return () => {
+            sections?.forEach(section => {
+                if (section) observer.unobserve(section);
+            });
+        };
+    }, [reportData]);
+
 
     const handleDownloadPdf = useCallback(() => {
         setIsGeneratingPdf(true);
@@ -95,7 +123,7 @@ const App: React.FC = () => {
     
     if (loadingState.isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4 font-inter text-center">
+            <div role="status" aria-live="polite" className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4 font-inter text-center">
                 <BrandIcon className="h-16 w-16 mx-auto text-sky-600 mb-6 animate-pulse" />
                 <h1 className="text-3xl font-bold text-slate-800">{loadingState.message}</h1>
                 <p className="text-slate-600 mt-2">This may take a few moments. Thank you for your patience.</p>
@@ -105,7 +133,7 @@ const App: React.FC = () => {
     
     if (loadingState.error) {
         return (
-             <div className="flex flex-col items-center justify-center min-h-screen bg-rose-50 p-4 font-inter text-center">
+             <div role="alert" aria-live="assertive" className="flex flex-col items-center justify-center min-h-screen bg-rose-50 p-4 font-inter text-center">
                 <h1 className="text-3xl font-bold text-rose-800 mb-4">An Error Occurred</h1>
                 <p className="text-rose-700 max-w-lg">{loadingState.error}</p>
                  <a href="/" className="mt-8 px-6 py-3 bg-sky-600 text-white font-bold rounded-full shadow-lg hover:bg-sky-700 transition-colors">
@@ -117,42 +145,42 @@ const App: React.FC = () => {
 
     if (reportData) {
         return (
-            <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8 font-inter flex flex-col items-center">
-                 <div className="max-w-7xl w-full">
-                     <div className="flex justify-between items-center mb-4">
-                        <a 
-                            href="/"
-                            className="px-4 py-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                            &larr; New Assessment
-                        </a>
-                    </div>
-                    <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
-                        <Header />
-                        <IndividualInfo data={reportData} />
-                        <AtAGlance domains={reportData.domains} />
+            <div className="min-h-screen bg-slate-100 font-inter">
+                 <ReportActions onDownload={handleDownloadPdf} isGenerating={isGeneratingPdf} />
+                 <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+                    <div className="max-w-7xl w-full">
+                        <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
+                            <div className="report-section"><Header /></div>
+                            <div className="report-section"><IndividualInfo data={reportData} /></div>
+                            <div className="report-section"><AtAGlance domains={reportData.domains} /></div>
 
-                        <div className="mt-16">
-                            <h2 className="text-3xl font-bold text-slate-900 mb-6 border-b pb-3 border-slate-300">Your Detailed Results</h2>
-                            <div className="space-y-8 mt-8">
-                                {reportData.domains.map((domain, index) => (
-                                    <DomainCard key={index} domain={domain} index={index} />
-                                ))}
+                            <div className="mt-16 report-section">
+                                <h2 className="text-3xl font-bold text-slate-900 mb-6 border-b pb-3 border-slate-300">Your Detailed Results</h2>
+                                <div className="space-y-8 mt-8">
+                                    {reportData.domains.map((domain, index) => (
+                                        <div key={index} className="report-section">
+                                            <DomainCard domain={domain} index={index} />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="report-section"><IndividualsDisclaimer /></div>
                             </div>
-                            <IndividualsDisclaimer />
-                        </div>
-
-                        <GlobalResources resources={globalResources} />
-                        
-                        <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-stretch justify-between gap-8">
-                            <VerificationSeal />
-                            <div className="flex-1">
-                                 <GeneralDisclaimer />
+                            
+                            <div className="report-section"><GlobalResources resources={globalResources} /></div>
+                            
+                            <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-stretch justify-between gap-8 report-section">
+                                <VerificationSeal />
+                                <div className="flex-1">
+                                     <GeneralDisclaimer />
+                                </div>
                             </div>
                         </div>
+                        <div className="report-section"><NextSteps /></div>
+                        <div className="report-section">
+                            <DownloadButton onClick={handleDownloadPdf} isGenerating={isGeneratingPdf} variant="full" />
+                        </div>
                     </div>
-                    <DownloadButton onClick={handleDownloadPdf} isGenerating={isGeneratingPdf} />
-                </div>
+                </main>
             </div>
         );
     }
