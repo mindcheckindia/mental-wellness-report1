@@ -1,12 +1,11 @@
 
 import React, { useRef, useEffect } from 'react';
 
-// Helper to generate a random number within a range
+// Helpers
 const random = (min: number, max: number) => Math.random() * (max - min) + min;
-
-// Helper to pick a random item from an array
 const randomPick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
+// Main Component
 const AnimatedBackground: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationFrameId = useRef<number>(0);
@@ -21,128 +20,229 @@ const AnimatedBackground: React.FC = () => {
         let height = window.innerHeight;
         let frame = 0;
 
-        // --- Configuration inspired by the vibrant, sunny image ---
-        const SUN_POSITION = { x: width * 0.7, y: height * 0.15 };
-        const SKY_COLOR_TOP = '#7dd3fc'; // Bright sky blue
-        const SKY_COLOR_HORIZON = '#fefce8'; // Pale yellow horizon
-        const MEADOW_COLOR_TOP = '#a3e635'; // Lime green
-        const MEADOW_COLOR_BOTTOM = '#4d7c0f'; // Darker lush green
-        const FLOWER_COLORS = ['#ef4444', '#3b82f6', '#eab308', '#8b5cf6', '#f472b6'];
-        const BIRD_COLORS = ['#3b82f6', '#ef4444', '#f59e0b']; // Blue, Red, Yellow
+        // --- Configuration inspired by the lush, sun-drenched reference image ---
+        const SUN_POSITION = { x: width * 0.75, y: height * 0.1 };
+        const SKY_COLOR_TOP = '#42a5f5'; // A richer blue
+        const SKY_COLOR_HORIZON = '#fffde7'; // Warm cream
+        const MEADOW_COLORS = ['#558b2f', '#7cb342', '#9ccc65'];
+        const FLOWER_COLORS = ['#ff7043', '#29b6f6', '#ffee58', '#ab47bc', '#ec407a'];
+        const LEAF_COLORS = ['#4d7c0f', '#65a30d', '#84cc16'];
+        const TRUNK_COLOR = '#5d4037';
+        const BIRD_COLORS = ['#1e88e5', '#e53935', '#fbc02d']; // Richer blue, red, yellow
 
-        // Parallax Layers: [trunkColor, leafColor, speed, count, y_range, height_range, width_range]
-        const treeLayers: [string, string, number, number, [number, number], [number, number], [number, number]][] = [
-            ['#a16207', '#65a30d', 0.1, 40, [height * 0.4, height * 0.6], [100, 200], [5, 10]], // Far
-            ['#854d0e', '#84cc16', 0.2, 30, [height * 0.5, height * 0.75], [200, 350], [10, 20]], // Mid
-            ['#713f12', '#a3e635', 0.4, 20, [height * 0.65, height], [350, 500], [20, 35]],    // Near
-        ];
-        
-        // --- Data structures for animated elements ---
-        let trees: { x: number, y: number, h: number, w: number, layer: number }[] = [];
-        let birds: { x: number, y: number, vx: number, vy: number, size: number, color: string, wingAngle: number }[] = [];
-        let leaves: { x: number, y: number, vx: number, vy: number, size: number, opacity: number, rotation: number }[] = [];
+        // --- Data structures ---
+        let trees: { x: number, y: number, depth: number, branches: { x1: number, y1: number, x2: number, y2: number, w: number }[] }[] = [];
+        let birds: { x: number, y: number, vx: number, vy: number, size: number, color: string, wingAngle: number, depth: number }[] = [];
+        let particles: { x: number, y: number, vx: number, vy: number, size: number, opacity: number }[] = [];
         let flowers: { x: number, y: number, size: number, color: string, swayOffset: number }[] = [];
+
+        // Recursive function to generate fractal-like branches
+        const generateBranches = (x1: number, y1: number, angle: number, depth: number, maxDepth: number): { x1: number, y1: number, x2: number, y2: number, w: number }[] => {
+            if (depth > maxDepth) return [];
+            
+            const len = random(10, 30) * (1 - depth / (maxDepth * 1.5));
+            const w = (maxDepth - depth + 1) * 1.5;
+            const x2 = x1 + Math.cos(angle) * len;
+            const y2 = y1 + Math.sin(angle) * len;
+            
+            let branches: { x1: number, y1: number, x2: number, y2: number, w: number }[] = [{ x1, y1, x2, y2, w }];
+            
+            branches = branches.concat(generateBranches(x2, y2, angle + random(0.2, 0.5), depth + 1, maxDepth));
+            branches = branches.concat(generateBranches(x2, y2, angle - random(0.2, 0.5), depth + 1, maxDepth));
+
+            return branches;
+        };
         
         const initialize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            SUN_POSITION.x = width * 0.7;
-            SUN_POSITION.y = height * 0.15;
+            SUN_POSITION.x = width * 0.75;
+            SUN_POSITION.y = height * 0.1;
 
-            // Initialize Trees
+            // Initialize Trees (fewer, more detailed)
             trees = [];
-            treeLayers.forEach((layer, layerIndex) => {
-                for(let i = 0; i < layer[3]; i++) {
-                    trees.push({
-                        x: random(-width * 0.5, width * 1.5),
-                        y: random(layer[4][0], layer[4][1]),
-                        h: random(layer[5][0], layer[5][1]),
-                        w: random(layer[6][0], layer[6][1]),
-                        layer: layerIndex
-                    });
-                }
-            });
-            trees.sort((a,b) => a.layer - b.layer); // Draw back-to-front
-            
+            for (let i = 0; i < 15; i++) {
+                const depth = random(0.1, 1);
+                const startY = height * 0.7 + (1-depth) * height * 0.3;
+                const startX = random(-width * 0.2, width * 1.2);
+                const treeHeight = (height - startY) * random(0.8, 1.2);
+
+                const trunkBase = { x1: startX, y1: startY, x2: startX, y2: startY - treeHeight, w: depth * 15 };
+                const branches = generateBranches(trunkBase.x2, trunkBase.y2, -Math.PI / 2, 0, 4);
+
+                trees.push({ x: startX, y: startY, depth, branches: [trunkBase, ...branches] });
+            }
+            trees.sort((a, b) => a.depth - b.depth); // Draw back to front
+
             // Initialize Birds
             birds = [];
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 12; i++) {
                  birds.push({
-                    x: random(0, width),
-                    y: random(height * 0.1, height * 0.5),
-                    vx: random(0.5, 1.5),
-                    vy: random(-0.2, 0.2),
-                    size: random(4, 8),
-                    color: randomPick(BIRD_COLORS),
-                    wingAngle: random(0, Math.PI * 2)
+                    x: random(0, width), y: random(height * 0.1, height * 0.6),
+                    vx: random(0.8, 2), vy: random(-0.3, 0.3),
+                    size: random(3, 7), color: randomPick(BIRD_COLORS),
+                    wingAngle: random(0, Math.PI * 2), depth: random(0.3, 0.9)
                 });
             }
 
-            // Initialize Falling Leaves/Petals
-            leaves = [];
-            for (let i = 0; i < 100; i++) {
-                leaves.push({
-                    x: random(0, width),
-                    y: random(0, height),
-                    vx: random(-0.2, 0.2),
-                    vy: random(0.3, 0.8),
-                    size: random(3, 6),
-                    opacity: random(0.4, 0.9),
-                    rotation: random(0, Math.PI * 2)
+            // Initialize Particles (Leaves/Dust)
+            particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: random(0, width), y: random(0, height),
+                    vx: random(-0.3, 0.3), vy: random(0.4, 1),
+                    size: random(1, 4), opacity: random(0.3, 0.8)
                 });
             }
 
             // Initialize Flowers
             flowers = [];
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 300; i++) {
                  flowers.push({
-                    x: random(0, width),
-                    y: random(height * 0.8, height * 1.1),
-                    size: random(5, 15),
-                    color: randomPick(FLOWER_COLORS),
+                    x: random(0, width), y: random(height * 0.75, height * 1.1),
+                    size: random(4, 12), color: randomPick(FLOWER_COLORS),
                     swayOffset: random(0, Math.PI * 2)
                  });
             }
-            flowers.sort((a, b) => a.y - b.y); // Draw flowers in the back first
+            flowers.sort((a, b) => a.y - b.y);
         };
-
+        
+        // --- Drawing Functions ---
         const drawSkyAndSun = () => {
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.7);
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.8);
             skyGradient.addColorStop(0, SKY_COLOR_TOP);
             skyGradient.addColorStop(1, SKY_COLOR_HORIZON);
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, width, height);
 
-            // Sun
-            const sunGradient = ctx.createRadialGradient(SUN_POSITION.x, SUN_POSITION.y, 30, SUN_POSITION.x, SUN_POSITION.y, 200);
-            sunGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            sunGradient.addColorStop(0.2, 'rgba(255, 253, 186, 0.8)');
-            sunGradient.addColorStop(1, 'rgba(255, 253, 186, 0)');
+            const sunGradient = ctx.createRadialGradient(SUN_POSITION.x, SUN_POSITION.y, 40, SUN_POSITION.x, SUN_POSITION.y, 300);
+            sunGradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+            sunGradient.addColorStop(0.1, 'rgba(255, 235, 179, 0.7)');
+            sunGradient.addColorStop(1, 'rgba(255, 235, 179, 0)');
             ctx.fillStyle = sunGradient;
             ctx.fillRect(0, 0, width, height);
         };
 
+        const drawMeadow = () => {
+            const meadowGradient = ctx.createLinearGradient(0, height * 0.7, 0, height);
+            meadowGradient.addColorStop(0, MEADOW_COLORS[2]);
+            meadowGradient.addColorStop(0.5, MEADOW_COLORS[1]);
+            meadowGradient.addColorStop(1, MEADOW_COLORS[0]);
+            ctx.fillStyle = meadowGradient;
+            ctx.fillRect(0, height * 0.7, width, height * 0.3);
+
+            // Add texture
+            ctx.save();
+            ctx.globalAlpha = 0.2;
+            for(let i = 0; i < 100; i++) {
+                ctx.fillStyle = randomPick(MEADOW_COLORS);
+                ctx.beginPath();
+                ctx.arc(random(0, width), random(height*0.7, height), random(20, 80), 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Flowers
+            flowers.forEach(f => {
+                const sway = Math.sin(frame * 0.03 + f.swayOffset) * 4;
+                ctx.fillStyle = f.color;
+                ctx.beginPath();
+                ctx.arc(f.x + sway, f.y, f.size / 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(f.x + sway, f.y);
+                ctx.lineTo(f.x + sway, f.y + f.size);
+                ctx.stroke();
+            });
+        };
+
+        const drawTree = (tree: { x: number, depth: number, branches: any[] }) => {
+            const parallaxOffset = (frame * tree.depth * 0.1);
+            const screenX = ((tree.x - parallaxOffset) % (width * 1.4)) + (width * 1.4) % (width * 1.4) - (width * 0.2);
+            
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = TRUNK_COLOR;
+
+            tree.branches.forEach(b => {
+                ctx.lineWidth = b.w * tree.depth;
+                ctx.beginPath();
+                ctx.moveTo(b.x1 + screenX - tree.x, b.y1);
+                ctx.lineTo(b.x2 + screenX - tree.x, b.y2);
+                ctx.stroke();
+                
+                // Draw leaves at branch ends
+                if (b.w < 3) {
+                    for(let i = 0; i < 5; i++) {
+                        ctx.fillStyle = randomPick(LEAF_COLORS);
+                        ctx.globalAlpha = 0.6;
+                        ctx.beginPath();
+                        ctx.arc(b.x2 + screenX - tree.x + random(-10, 10), b.y2 + random(-10, 10), random(5, 15) * tree.depth, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+            });
+        };
+
+        const drawParticles = () => {
+             particles.forEach(p => {
+                p.x += p.vx + Math.sin(frame * 0.05 + p.y * 0.1) * 0.3;
+                p.y += p.vy;
+
+                if (p.y > height + 5) { p.y = -5; p.x = random(0, width); }
+                if (p.x > width + 5) { p.x = -5; }
+                if (p.x < -5) { p.x = width + 5; }
+
+                ctx.fillStyle = `rgba(255, 213, 79, ${p.opacity})`; // Golden particles
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        };
+        
+        const drawBirds = () => {
+             birds.forEach(b => {
+                b.x += b.vx * b.depth;
+                b.y += b.vy;
+                b.wingAngle += 0.4;
+                
+                if (b.x > width + 20) { b.x = -20; b.y = random(height * 0.1, height * 0.6); }
+
+                const wingY = Math.sin(b.wingAngle) * b.size * 0.9;
+                
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.ellipse(b.x, b.y, b.size * 0.7, b.size * 0.4, 0, 0, Math.PI*2); // Body
+                ctx.moveTo(b.x, b.y);
+                ctx.quadraticCurveTo(b.x - b.size, b.y - wingY, b.x - b.size * 1.8, b.y); // Left Wing
+                ctx.moveTo(b.x, b.y);
+                ctx.quadraticCurveTo(b.x + b.size, b.y - wingY, b.x + b.size * 1.8, b.y); // Right wing
+                ctx.fill();
+            });
+        };
+
         const drawLightRays = () => {
              ctx.save();
-             ctx.globalCompositeOperation = 'overlay'; // Use overlay for a bright, sunny effect
-             for (let i = 0; i < 12; i++) {
-                 const angle = (i / 12) * Math.PI * 0.4 + Math.PI * 0.05 + (Math.sin(frame * 0.005 + i) * 0.05);
-                 const rayLength = height * 1.5;
-                 const rayWidth = random(2, 5);
+             ctx.globalCompositeOperation = 'lighter';
+             for (let i = 0; i < 15; i++) {
+                 const angle = random(-0.2, 0.2) + Math.PI / 2.5;
+                 const length = height * 1.5;
                  
-                 const x2 = SUN_POSITION.x + Math.cos(angle) * rayLength;
-                 const y2 = SUN_POSITION.y + Math.sin(angle) * rayLength;
-
-                 const opacity = (Math.sin(frame * 0.01 + i * 2) * 0.4 + 0.6) * 0.2; // Shimmering effect
+                 const x2 = SUN_POSITION.x + Math.cos(angle) * length;
+                 const y2 = SUN_POSITION.y + Math.sin(angle) * length;
+                 
+                 const opacity = (Math.sin(frame * 0.008 + i * 2) * 0.3 + 0.7) * 0.1;
                  const gradient = ctx.createLinearGradient(SUN_POSITION.x, SUN_POSITION.y, x2, y2);
-                 gradient.addColorStop(0, `rgba(255, 229, 180, ${opacity})`);
-                 gradient.addColorStop(0.5, `rgba(255, 229, 180, ${opacity * 0.5})`);
-                 gradient.addColorStop(1, 'rgba(255, 229, 180, 0)');
+                 gradient.addColorStop(0, `rgba(255, 235, 179, ${opacity})`);
+                 gradient.addColorStop(0.5, `rgba(255, 235, 179, ${opacity * 0.5})`);
+                 gradient.addColorStop(1, 'rgba(255, 235, 179, 0)');
                  
                  ctx.beginPath();
                  ctx.moveTo(SUN_POSITION.x, SUN_POSITION.y);
-                 ctx.lineTo(x2 + rayWidth, y2);
-                 ctx.lineTo(x2 - rayWidth, y2);
+                 ctx.lineTo(x2 + random(-100, 100), y2);
+                 ctx.lineTo(x2 + random(-100, 100), y2);
                  ctx.closePath();
                  
                  ctx.fillStyle = gradient;
@@ -151,115 +251,16 @@ const AnimatedBackground: React.FC = () => {
              ctx.restore();
         };
 
-        const drawTree = (x: number, y: number, h: number, w: number, trunkColor: string, leafColor: string) => {
-            // Trunk
-            ctx.fillStyle = trunkColor;
-            ctx.fillRect(x - w / 2, y - h, w, h);
-            
-            // Canopy
-            ctx.fillStyle = leafColor;
-            ctx.beginPath();
-            ctx.ellipse(x, y - h, w * 2, w * 1.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(x - w, y - h * 0.8, w * 2, w * 1.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-             ctx.beginPath();
-            ctx.ellipse(x + w, y - h * 0.8, w * 2, w * 1.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        const drawTrees = () => {
-            trees.forEach(tree => {
-                const layerConfig = treeLayers[tree.layer];
-                const speed = layerConfig[2];
-                const trunkColor = layerConfig[0];
-                const leafColor = layerConfig[1];
-                const x = (tree.x - frame * speed);
-                
-                // Seamless loop logic
-                const screenX = ((x % (width * 2)) + (width * 2)) % (width * 2) - width * 0.5;
-
-                drawTree(screenX, tree.y, tree.h, tree.w, trunkColor, leafColor);
-            });
-        };
-        
-        const drawMeadowAndFlowers = () => {
-            const meadowGradient = ctx.createLinearGradient(0, height * 0.7, 0, height);
-            meadowGradient.addColorStop(0, MEADOW_COLOR_TOP);
-            meadowGradient.addColorStop(1, MEADOW_COLOR_BOTTOM);
-            ctx.fillStyle = meadowGradient;
-            ctx.fillRect(0, height * 0.7, width, height * 0.3);
-
-            flowers.forEach(flower => {
-                const sway = Math.sin(frame * 0.02 + flower.swayOffset) * 5; // Gentle sway
-                ctx.fillStyle = flower.color;
-                ctx.beginPath();
-                ctx.arc(flower.x + sway, flower.y, flower.size / 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        };
-
-        const drawFallingLeaves = () => {
-            leaves.forEach(leaf => {
-                leaf.x += leaf.vx + Math.sin(frame * 0.05 + leaf.y) * 0.2; // Add some side-to-side drift
-                leaf.y += leaf.vy;
-                leaf.rotation += leaf.vx; // Rotate as it falls
-
-                // Reset leaf when it goes off screen
-                if (leaf.y > height + 10) {
-                    leaf.y = -10;
-                    leaf.x = random(0, width);
-                }
-                if (leaf.x > width + 10) { leaf.x = -10; }
-                if (leaf.x < -10) { leaf.x = width + 10; }
-                
-                ctx.save();
-                ctx.translate(leaf.x, leaf.y);
-                ctx.rotate(leaf.rotation);
-                ctx.fillStyle = `rgba(253, 186, 116, ${leaf.opacity})`; // Golden leaves
-                ctx.beginPath();
-                ctx.ellipse(0, 0, leaf.size, leaf.size/2, 0, 0, Math.PI*2);
-                ctx.fill();
-                ctx.restore();
-            });
-        };
-
-        const drawBirds = () => {
-            birds.forEach(bird => {
-                bird.x += bird.vx;
-                bird.y += bird.vy;
-                bird.wingAngle += 0.3;
-
-                if (bird.x > width + 20) {
-                    bird.x = -20;
-                    bird.y = random(height * 0.1, height * 0.5);
-                }
-
-                const wingYOffset = Math.sin(bird.wingAngle) * bird.size * 0.8;
-                
-                ctx.fillStyle = bird.color;
-                ctx.beginPath();
-                // Left wing
-                ctx.moveTo(bird.x - bird.size * 0.2, bird.y);
-                ctx.quadraticCurveTo(bird.x - bird.size, bird.y - wingYOffset, bird.x - bird.size * 1.5, bird.y);
-                // Right wing
-                ctx.moveTo(bird.x + bird.size * 0.2, bird.y);
-                ctx.quadraticCurveTo(bird.x + bird.size, bird.y - wingYOffset, bird.x + bird.size * 1.5, bird.y);
-                ctx.fill();
-            });
-        };
-        
         const animate = () => {
             frame++;
             ctx.clearRect(0, 0, width, height);
-            
+
             drawSkyAndSun();
-            drawTrees();
-            drawLightRays();
-            drawMeadowAndFlowers();
-            drawFallingLeaves();
+            drawMeadow();
+            trees.forEach(drawTree);
             drawBirds();
+            drawParticles();
+            drawLightRays();
             
             animationFrameId.current = window.requestAnimationFrame(animate);
         };
