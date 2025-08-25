@@ -3,7 +3,6 @@ import { AnswerOption, AssessmentSection } from '../types';
 
 // Thresholds for showing Level 2 questions based on Level 1 answers
 const LEVEL_2_THRESHOLD = 2; // "Mild" or greater
-const HIGH_RISK_THRESHOLD = 1; // "Slight" or greater
 
 // --- Standard Answer Sets ---
 const LEVEL_1_ANSWERS: AnswerOption[] = [

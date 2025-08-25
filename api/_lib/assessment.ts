@@ -67,7 +67,7 @@ const getBaseValue = (answer: any): number | null => {
     return parseInt(answer, 10);
 };
 
-const answerToPROMISValue = (answer: any, isReversed: boolean = false): number | null => {
+const answerToPROMISValue = (answer: any): number | null => {
     // PROMIS instruments use a 1-5 scale directly in their answer values.
     if (answer === null || answer === undefined) return null;
     return parseInt(answer, 10);

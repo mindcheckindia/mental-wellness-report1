@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Domain } from '../types';
 import { getStylesForScore } from '../utils/helpers';
-import { InformationCircleIcon, LightbulbIcon, UsersIcon, domainIcons, ChevronDownIcon, BookOpenIcon } from './icons';
+import { InformationCircleIcon, LightbulbIcon, UsersIcon, domainIcons, ChevronDownIcon } from './icons';
 import ScoreBar from './ScoreBar';
 
 interface DomainCardProps {
