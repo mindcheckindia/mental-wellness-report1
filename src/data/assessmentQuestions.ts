@@ -23,8 +23,8 @@ const PROMIS_ANSWERS: AnswerOption[] = [
 
 const PHQ15_ANSWERS: AnswerOption[] = [
     { value: 0, text: "It hasn't bothered me." },
-    { value: 1, text: "It's bothered me a little." },
-    { value: 2, text: "It's bothered me a lot." }
+    { value: 1, text: "It has bothered me a little." },
+    { value: 2, text: "It has bothered me a lot." }
 ];
 
 // --- Clinically-Accurate Assessment Structure with User-Friendly Language ---
