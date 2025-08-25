@@ -393,8 +393,9 @@ function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: 
     // If no Level 2 answers were provided...
     if (numericAnswers.length === 0) {
         // ...check if it's because the L1 trigger wasn't met.
-        if (config.l1Trigger) {
-            const triggerMet = config.l1Trigger.questionIds.some(id => (allAnswers[id] ?? 0) >= config.l1Trigger.threshold);
+        const l1TriggerConfig = config.l1Trigger;
+        if (l1TriggerConfig) {
+            const triggerMet = l1TriggerConfig.questionIds.some(id => (allAnswers[id] ?? 0) >= l1TriggerConfig.threshold);
             if (!triggerMet) {
                 // L2 not triggered, so assign a healthy/low score.
                 const lowScore = config.referenceIntervals[0].min;
