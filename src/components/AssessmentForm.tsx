@@ -232,7 +232,7 @@ const AssessmentForm: React.FC = () => {
         <div className="min-h-screen font-inter flex flex-col items-center justify-center p-4 relative overflow-hidden">
             <div className="fixed inset-0 w-full h-full -z-10">
                 <AnimatedBackground />
-                <div className="absolute inset-0 bg-slate-900/70"></div>
+                <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
             {renderContent()}
         </div>
