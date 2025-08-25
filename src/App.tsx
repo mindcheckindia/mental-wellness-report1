@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { IndividualData } from './types';
 import { globalResources } from './data/globalData';
 import { mockReportData } from './data/mockData';
