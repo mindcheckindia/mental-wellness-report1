@@ -1,8 +1,11 @@
 
-
 import React, { useRef, useEffect } from 'react';
 
+// Helper to generate a random number within a range
 const random = (min: number, max: number) => Math.random() * (max - min) + min;
+
+// Helper to pick a random item from an array
+const randomPick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 const AnimatedBackground: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,212 +21,244 @@ const AnimatedBackground: React.FC = () => {
         let height = window.innerHeight;
         let frame = 0;
 
-        // --- Configuration based on prompt ---
-        const HORIZON_Y = height * 0.55;
-        const SKY_COLOR_TOP = '#D1B498'; // Soft golden hour
-        const SKY_COLOR_HORIZON = '#EAE0D5'; // Misty horizon
-        const RIVER_COLOR = '#5A6372'; // Calm, dark water
-        const SUN_GLOW_COLOR = 'rgba(255, 215, 130, 0.25)';
+        // --- Configuration inspired by the vibrant, sunny image ---
+        const SUN_POSITION = { x: width * 0.7, y: height * 0.15 };
+        const SKY_COLOR_TOP = '#7dd3fc'; // Bright sky blue
+        const SKY_COLOR_HORIZON = '#fefce8'; // Pale yellow horizon
+        const MEADOW_COLOR_TOP = '#a3e635'; // Lime green
+        const MEADOW_COLOR_BOTTOM = '#4d7c0f'; // Darker lush green
+        const FLOWER_COLORS = ['#ef4444', '#3b82f6', '#eab308', '#8b5cf6', '#f472b6'];
+        const BIRD_COLORS = ['#3b82f6', '#ef4444', '#f59e0b']; // Blue, Red, Yellow
 
-        // Parallax Forest Layers: [color, speed, element_count, y_range, height_range, width_range]
-        const forestLayers: [string, number, number, [number, number], [number, number], [number, number]][] = [
-            ['#4F6A4F', 0.05, 150, [HORIZON_Y - 50, HORIZON_Y], [50, 150], [1, 3]],   // Farthest, misty
-            ['#3B5339', 0.1, 100, [HORIZON_Y - 30, HORIZON_Y + 50], [150, 250], [2, 5]], // Far
-            ['#2F4F4F', 0.2, 70, [HORIZON_Y, HORIZON_Y + 150], [200, 400], [3, 8]],      // Mid
-            ['#2A3C2A', 0.4, 40, [HORIZON_Y + 50, height * 0.9], [300, 500], [5, 15]],    // Near
+        // Parallax Layers: [trunkColor, leafColor, speed, count, y_range, height_range, width_range]
+        const treeLayers: [string, string, number, number, [number, number], [number, number], [number, number]][] = [
+            ['#a16207', '#65a30d', 0.1, 40, [height * 0.4, height * 0.6], [100, 200], [5, 10]], // Far
+            ['#854d0e', '#84cc16', 0.2, 30, [height * 0.5, height * 0.75], [200, 350], [10, 20]], // Mid
+            ['#713f12', '#a3e635', 0.4, 20, [height * 0.65, height], [350, 500], [20, 35]],    // Near
         ];
         
+        // --- Data structures for animated elements ---
         let trees: { x: number, y: number, h: number, w: number, layer: number }[] = [];
-        let birds: { x: number, y: number, vx: number, vy: number, size: number, wingAngle: number }[] = [];
-        let particles: { x: number, y: number, vx: number, vy: number, size: number, opacity: number }[] = [];
+        let birds: { x: number, y: number, vx: number, vy: number, size: number, color: string, wingAngle: number }[] = [];
+        let leaves: { x: number, y: number, vx: number, vy: number, size: number, opacity: number, rotation: number }[] = [];
+        let flowers: { x: number, y: number, size: number, color: string, swayOffset: number }[] = [];
         
         const initialize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            SUN_POSITION.x = width * 0.7;
+            SUN_POSITION.y = height * 0.15;
 
+            // Initialize Trees
             trees = [];
-            forestLayers.forEach((layer, layerIndex) => {
-                for(let i = 0; i < layer[2]; i++) {
+            treeLayers.forEach((layer, layerIndex) => {
+                for(let i = 0; i < layer[3]; i++) {
                     trees.push({
                         x: random(-width * 0.5, width * 1.5),
-                        y: random(layer[3][0], layer[3][1]),
-                        h: random(layer[4][0], layer[4][1]),
-                        w: random(layer[5][0], layer[5][1]),
+                        y: random(layer[4][0], layer[4][1]),
+                        h: random(layer[5][0], layer[5][1]),
+                        w: random(layer[6][0], layer[6][1]),
                         layer: layerIndex
                     });
                 }
             });
-            // Sort so we can draw back-to-front
-            trees.sort((a,b) => a.layer - b.layer);
+            trees.sort((a,b) => a.layer - b.layer); // Draw back-to-front
             
+            // Initialize Birds
             birds = [];
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < 15; i++) {
                  birds.push({
                     x: random(0, width),
-                    y: random(height * 0.1, height * 0.3),
-                    vx: random(0.2, 0.5),
-                    vy: random(-0.1, 0.1),
-                    size: random(2, 4),
+                    y: random(height * 0.1, height * 0.5),
+                    vx: random(0.5, 1.5),
+                    vy: random(-0.2, 0.2),
+                    size: random(4, 8),
+                    color: randomPick(BIRD_COLORS),
                     wingAngle: random(0, Math.PI * 2)
                 });
             }
 
-            particles = [];
-            for (let i = 0; i < 150; i++) {
-                particles.push({
+            // Initialize Falling Leaves/Petals
+            leaves = [];
+            for (let i = 0; i < 100; i++) {
+                leaves.push({
                     x: random(0, width),
                     y: random(0, height),
-                    vx: random(-0.05, 0.05),
-                    vy: random(-0.1, -0.05),
-                    size: random(1, 3),
-                    opacity: random(0.1, 0.5)
+                    vx: random(-0.2, 0.2),
+                    vy: random(0.3, 0.8),
+                    size: random(3, 6),
+                    opacity: random(0.4, 0.9),
+                    rotation: random(0, Math.PI * 2)
                 });
             }
+
+            // Initialize Flowers
+            flowers = [];
+            for (let i = 0; i < 200; i++) {
+                 flowers.push({
+                    x: random(0, width),
+                    y: random(height * 0.8, height * 1.1),
+                    size: random(5, 15),
+                    color: randomPick(FLOWER_COLORS),
+                    swayOffset: random(0, Math.PI * 2)
+                 });
+            }
+            flowers.sort((a, b) => a.y - b.y); // Draw flowers in the back first
         };
 
         const drawSkyAndSun = () => {
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, HORIZON_Y);
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.7);
             skyGradient.addColorStop(0, SKY_COLOR_TOP);
             skyGradient.addColorStop(1, SKY_COLOR_HORIZON);
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, width, height);
 
-            // Sun glow
-            const sunX = width / 2;
-            const sunY = HORIZON_Y - 100;
-            const sunGradient = ctx.createRadialGradient(sunX, sunY, 50, sunX, sunY, 600);
-            sunGradient.addColorStop(0, SUN_GLOW_COLOR);
-            sunGradient.addColorStop(1, 'rgba(255, 215, 130, 0)');
+            // Sun
+            const sunGradient = ctx.createRadialGradient(SUN_POSITION.x, SUN_POSITION.y, 30, SUN_POSITION.x, SUN_POSITION.y, 200);
+            sunGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            sunGradient.addColorStop(0.2, 'rgba(255, 253, 186, 0.8)');
+            sunGradient.addColorStop(1, 'rgba(255, 253, 186, 0)');
             ctx.fillStyle = sunGradient;
             ctx.fillRect(0, 0, width, height);
         };
 
-        const drawTree = (x: number, y: number, h: number, w: number, color: string) => {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(x - w / 2, y);
-            ctx.lineTo(x + w / 2, y);
-            ctx.lineTo(x, y - h);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        const drawTrees = () => {
-            trees.forEach(tree => {
-                const layerConfig = forestLayers[tree.layer];
-                const speed = layerConfig[1];
-                const color = layerConfig[0];
-                const x = (tree.x - frame * speed);
-                
-                // seamless loop logic
-                const screenX = ((x % (width * 2)) + (width * 2)) % (width * 2) - width * 0.5;
-
-                drawTree(screenX, tree.y, tree.h, tree.w, color);
-            });
-        };
-        
-        const drawRiver = () => {
-            ctx.fillStyle = RIVER_COLOR;
-            ctx.fillRect(0, HORIZON_Y, width, height - HORIZON_Y);
-            
-            // Ripples
-            ctx.save();
-            ctx.globalCompositeOperation = 'overlay';
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 1;
-            for(let i = 0; i < 10; i++) {
-                ctx.beginPath();
-                const startY = HORIZON_Y + random(0, height - HORIZON_Y);
-                ctx.moveTo(0, startY);
-                for(let x = 0; x < width; x += 20) {
-                    ctx.lineTo(x, startY + Math.sin((x + frame * 1.5 + i * 100) * 0.02) * 5);
-                }
-                ctx.stroke();
-                ctx.closePath();
-            }
-             ctx.restore();
-        };
-
-        const drawMist = () => {
-            // Gradient mist
-            const mistGradient = ctx.createLinearGradient(0, HORIZON_Y - 150, 0, height);
-            mistGradient.addColorStop(0, 'rgba(234, 224, 213, 0)');
-            mistGradient.addColorStop(0.5, 'rgba(234, 224, 213, 0.7)');
-            mistGradient.addColorStop(1, 'rgba(234, 224, 213, 0.8)');
-            ctx.fillStyle = mistGradient;
-            ctx.fillRect(0, HORIZON_Y - 150, width, height);
-
-            // Dust motes / particles
-            particles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                if (p.y < 0) { p.y = height; }
-                if (p.x < 0) { p.x = width; }
-                if (p.x > width) { p.x = 0; }
-
-                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        };
-
-        const drawBirds = () => {
-            ctx.fillStyle = '#1c1917'; // dark silhouette color
-            birds.forEach(bird => {
-                bird.x += bird.vx;
-                bird.y += bird.vy;
-                bird.wingAngle += 0.2;
-
-                if (bird.x > width + 20) {
-                    bird.x = -20;
-                    bird.y = random(height * 0.1, height * 0.3);
-                }
-
-                const wingYOffset = Math.sin(bird.wingAngle) * bird.size * 1.5;
-
-                ctx.beginPath();
-                ctx.moveTo(bird.x - bird.size, bird.y);
-                ctx.lineTo(bird.x, bird.y - wingYOffset);
-                ctx.lineTo(bird.x + bird.size, bird.y);
-                ctx.closePath();
-                ctx.fill();
-            });
-        };
-
         const drawLightRays = () => {
              ctx.save();
-             ctx.globalCompositeOperation = 'overlay';
-             for (let i = 0; i < 3; i++) {
-                 const rayX = (width / 2) + Math.sin(frame * 0.001 + i * 2) * (width * 0.4);
-                 const rayW = random(200, 400);
-                 const opacity = (Math.sin(frame * 0.005 + i * 3) * 0.5 + 0.5) * 0.1;
+             ctx.globalCompositeOperation = 'overlay'; // Use overlay for a bright, sunny effect
+             for (let i = 0; i < 12; i++) {
+                 const angle = (i / 12) * Math.PI * 0.4 + Math.PI * 0.05 + (Math.sin(frame * 0.005 + i) * 0.05);
+                 const rayLength = height * 1.5;
+                 const rayWidth = random(2, 5);
+                 
+                 const x2 = SUN_POSITION.x + Math.cos(angle) * rayLength;
+                 const y2 = SUN_POSITION.y + Math.sin(angle) * rayLength;
 
-                 const gradient = ctx.createLinearGradient(rayX, 0, rayX, HORIZON_Y);
-                 gradient.addColorStop(0, `rgba(255, 215, 130, ${opacity})`);
-                 gradient.addColorStop(1, `rgba(255, 215, 130, 0)`);
+                 const opacity = (Math.sin(frame * 0.01 + i * 2) * 0.4 + 0.6) * 0.2; // Shimmering effect
+                 const gradient = ctx.createLinearGradient(SUN_POSITION.x, SUN_POSITION.y, x2, y2);
+                 gradient.addColorStop(0, `rgba(255, 229, 180, ${opacity})`);
+                 gradient.addColorStop(0.5, `rgba(255, 229, 180, ${opacity * 0.5})`);
+                 gradient.addColorStop(1, 'rgba(255, 229, 180, 0)');
+                 
+                 ctx.beginPath();
+                 ctx.moveTo(SUN_POSITION.x, SUN_POSITION.y);
+                 ctx.lineTo(x2 + rayWidth, y2);
+                 ctx.lineTo(x2 - rayWidth, y2);
+                 ctx.closePath();
                  
                  ctx.fillStyle = gradient;
-                 ctx.beginPath();
-                 ctx.moveTo(rayX - rayW, 0);
-                 ctx.lineTo(rayX + rayW, 0);
-                 ctx.lineTo(rayX + 50, HORIZON_Y);
-                 ctx.lineTo(rayX - 50, HORIZON_Y);
-                 ctx.closePath();
                  ctx.fill();
              }
              ctx.restore();
         };
 
+        const drawTree = (x: number, y: number, h: number, w: number, trunkColor: string, leafColor: string) => {
+            // Trunk
+            ctx.fillStyle = trunkColor;
+            ctx.fillRect(x - w / 2, y - h, w, h);
+            
+            // Canopy
+            ctx.fillStyle = leafColor;
+            ctx.beginPath();
+            ctx.ellipse(x, y - h, w * 2, w * 1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x - w, y - h * 0.8, w * 2, w * 1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+             ctx.beginPath();
+            ctx.ellipse(x + w, y - h * 0.8, w * 2, w * 1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        const drawTrees = () => {
+            trees.forEach(tree => {
+                const layerConfig = treeLayers[tree.layer];
+                const speed = layerConfig[2];
+                const trunkColor = layerConfig[0];
+                const leafColor = layerConfig[1];
+                const x = (tree.x - frame * speed);
+                
+                // Seamless loop logic
+                const screenX = ((x % (width * 2)) + (width * 2)) % (width * 2) - width * 0.5;
+
+                drawTree(screenX, tree.y, tree.h, tree.w, trunkColor, leafColor);
+            });
+        };
+        
+        const drawMeadowAndFlowers = () => {
+            const meadowGradient = ctx.createLinearGradient(0, height * 0.7, 0, height);
+            meadowGradient.addColorStop(0, MEADOW_COLOR_TOP);
+            meadowGradient.addColorStop(1, MEADOW_COLOR_BOTTOM);
+            ctx.fillStyle = meadowGradient;
+            ctx.fillRect(0, height * 0.7, width, height * 0.3);
+
+            flowers.forEach(flower => {
+                const sway = Math.sin(frame * 0.02 + flower.swayOffset) * 5; // Gentle sway
+                ctx.fillStyle = flower.color;
+                ctx.beginPath();
+                ctx.arc(flower.x + sway, flower.y, flower.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        };
+
+        const drawFallingLeaves = () => {
+            leaves.forEach(leaf => {
+                leaf.x += leaf.vx + Math.sin(frame * 0.05 + leaf.y) * 0.2; // Add some side-to-side drift
+                leaf.y += leaf.vy;
+                leaf.rotation += leaf.vx; // Rotate as it falls
+
+                // Reset leaf when it goes off screen
+                if (leaf.y > height + 10) {
+                    leaf.y = -10;
+                    leaf.x = random(0, width);
+                }
+                if (leaf.x > width + 10) { leaf.x = -10; }
+                if (leaf.x < -10) { leaf.x = width + 10; }
+                
+                ctx.save();
+                ctx.translate(leaf.x, leaf.y);
+                ctx.rotate(leaf.rotation);
+                ctx.fillStyle = `rgba(253, 186, 116, ${leaf.opacity})`; // Golden leaves
+                ctx.beginPath();
+                ctx.ellipse(0, 0, leaf.size, leaf.size/2, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            });
+        };
+
+        const drawBirds = () => {
+            birds.forEach(bird => {
+                bird.x += bird.vx;
+                bird.y += bird.vy;
+                bird.wingAngle += 0.3;
+
+                if (bird.x > width + 20) {
+                    bird.x = -20;
+                    bird.y = random(height * 0.1, height * 0.5);
+                }
+
+                const wingYOffset = Math.sin(bird.wingAngle) * bird.size * 0.8;
+                
+                ctx.fillStyle = bird.color;
+                ctx.beginPath();
+                // Left wing
+                ctx.moveTo(bird.x - bird.size * 0.2, bird.y);
+                ctx.quadraticCurveTo(bird.x - bird.size, bird.y - wingYOffset, bird.x - bird.size * 1.5, bird.y);
+                // Right wing
+                ctx.moveTo(bird.x + bird.size * 0.2, bird.y);
+                ctx.quadraticCurveTo(bird.x + bird.size, bird.y - wingYOffset, bird.x + bird.size * 1.5, bird.y);
+                ctx.fill();
+            });
+        };
+        
         const animate = () => {
             frame++;
             ctx.clearRect(0, 0, width, height);
             
             drawSkyAndSun();
-            drawLightRays();
             drawTrees();
-            drawRiver();
-            drawMist();
+            drawLightRays();
+            drawMeadowAndFlowers();
+            drawFallingLeaves();
             drawBirds();
             
             animationFrameId.current = window.requestAnimationFrame(animate);
