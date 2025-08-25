@@ -69,6 +69,9 @@ const ScoreBar: React.FC<ScoreBarProps> = ({ score, intervals, scoreLabel, minSc
                     {displaySegments.map((seg, index) => (
                         <div key={index} className="flex flex-col items-center text-center px-1">
                             <span className="text-xs font-semibold text-slate-600 leading-tight">{seg.label}</span>
+                             <span className="text-xs text-slate-500 -mt-0.5">
+                                {seg.max !== null ? `${seg.min} - ${seg.max}` : `${seg.min}+`}
+                            </span>
                         </div>
                     ))}
                 </div>

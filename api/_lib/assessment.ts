@@ -102,8 +102,14 @@ interface DomainConfig {
   tScoreType: TScoreType;
   referenceIntervals: ReferenceInterval[];
   individualsExperienced: { name: string; link: string; }[];
-  intendedQuestionCount: number; 
+  intendedQuestionCount: number;
+  l1Trigger?: {
+      questionIds: string[];
+      threshold: number;
+  };
 }
+
+const LEVEL_2_THRESHOLD = 2; // "Mild" or greater ("A few times")
 
 // --- DOMAIN CONFIGURATION ---
 const domainConfigs: DomainConfig[] = [
@@ -113,6 +119,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         tScoreType: 'DEPRESSION',
         intendedQuestionCount: 8, // Based on the 8-item PROMIS Short Form
+        l1Trigger: { questionIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'dep_l2_1', isCore: true }, { id: 'dep_l2_2', isCore: true }, { id: 'dep_l2_3', isCore: true }, 
             { id: 'dep_l2_4', isCore: true }, { id: 'dep_l2_5', isCore: true }, { id: 'dep_l2_6', isCore: true }, 
@@ -137,6 +144,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         tScoreType: 'ANGER',
         intendedQuestionCount: 5, // Based on the 5-item PROMIS Short Form
+        l1Trigger: { questionIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'ang_l2_1', isCore: true }, { id: 'ang_l2_2', isCore: true }, { id: 'ang_l2_3', isCore: true }, 
             { id: 'ang_l2_4', isCore: true }, { id: 'ang_l2_5', isCore: true }
@@ -160,6 +168,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
         intendedQuestionCount: 5, // Based on the 5-item ASRM
+        l1Trigger: { questionIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'man_l2_1', isCore: true }, { id: 'man_l2_2', isCore: true }, { id: 'man_l2_3', isCore: true }, 
             { id: 'man_l2_4', isCore: true }, { id: 'man_l2_5', isCore: true }
@@ -181,6 +190,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         tScoreType: 'ANXIETY',
         intendedQuestionCount: 7, // Based on the 7-item PROMIS Short Form
+        l1Trigger: { questionIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'anx_l2_1', isCore: true }, { id: 'anx_l2_2', isCore: true }, { id: 'anx_l2_3', isCore: true }, 
             { id: 'anx_l2_4', isCore: true }, { id: 'anx_l2_5', isCore: true }, { id: 'anx_l2_6', isCore: true }, 
@@ -205,6 +215,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PHQ15',
         tScoreType: 'NONE',
         intendedQuestionCount: 15, // Based on PHQ-15
+        l1Trigger: { questionIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'som_l2_1', isCore: true }, { id: 'som_l2_2', isCore: true }, { id: 'som_l2_3', isCore: true },
             { id: 'som_l2_4', isCore: true }, { id: 'som_l2_5', isCore: true }, { id: 'som_l2_6', isCore: true },
@@ -267,6 +278,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'PROMIS',
         tScoreType: 'SLEEP',
         intendedQuestionCount: 8, // Based on the 8-item PROMIS Short Form
+        l1Trigger: { questionIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'slp_l2_1', isCore: true }, { id: 'slp_l2_2', isCore: true }, { id: 'slp_l2_3', isCore: true },
             { id: 'slp_l2_4', isCore: true }, { id: 'slp_l2_5', isCore: true }, { id: 'slp_l2_6', isCore: true },
@@ -307,6 +319,7 @@ const domainConfigs: DomainConfig[] = [
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
         intendedQuestionCount: 5, // Based on 5-item FOCI scale
+        l1Trigger: { questionIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD },
         questionIds: [
             { id: 'rep_l2_1', isCore: true }, { id: 'rep_l2_2', isCore: true }, { id: 'rep_l2_3', isCore: true }, 
             { id: 'rep_l2_4', isCore: true }, { id: 'rep_l2_5', isCore: true }
@@ -377,8 +390,42 @@ function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: 
         .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping))
         .filter((val): val is number => val !== null);
 
-    if (numericAnswers.length === 0) {
+    // If no Level 2 answers, check if it's because the L1 trigger wasn't met.
+    if (numericAnswers.length === 0 && config.l1Trigger) {
+        const triggerMet = config.l1Trigger.questionIds.some(id => (allAnswers[id] ?? 0) >= config.l1Trigger.threshold);
+        if (!triggerMet) {
+            // L2 not triggered, so assign a healthy/low score.
+            const lowScore = config.referenceIntervals[0].min;
+            let tScore: number | null = null;
+            let finalScore = lowScore;
+
+            if (config.tScoreType !== 'NONE') {
+                tScore = 45; // A safe, low T-Score
+                finalScore = tScore;
+            } else if (config.scoringMethod === 'AVERAGE') {
+                finalScore = 0; // For FOCI, average is 0 if not triggered
+            }
+            
+            return { rawScore: finalScore, finalScore, tScore };
+        }
+        // If trigger was met but no answers, it's incomplete.
         return { rawScore: null, finalScore: null, tScore: null };
+    }
+
+
+    if (numericAnswers.length === 0 && config.scoringMethod !== 'MAX_THRESHOLD') {
+        // This handles L1-only domains that might still be empty
+        return { rawScore: null, finalScore: null, tScore: null };
+    }
+    
+    // For MAX_THRESHOLD, numericAnswers might be from L1 questions.
+    if (numericAnswers.length === 0 && config.scoringMethod === 'MAX_THRESHOLD') {
+        const l1Answers = config.questionIds
+            .map(q => getAnswerValue(allAnswers[q.id], config.answerMapping))
+            .filter((val): val is number => val !== null);
+        if (l1Answers.length === 0) return { rawScore: null, finalScore: null, tScore: null };
+        const score = Math.max(...l1Answers);
+        return { rawScore: score, finalScore: score, tScore: null };
     }
 
     if (config.scoringMethod !== 'MAX_THRESHOLD' && (numericAnswers.length / config.intendedQuestionCount) < MINIMUM_COMPLETION_RATIO) {
@@ -429,6 +476,11 @@ function getInterpretation(score: number | null, intervals: ReferenceInterval[])
             return interval.label;
         }
     }
+    // Fallback for scores slightly outside defined ranges
+    const sortedIntervals = [...intervals].sort((a,b) => a.min - b.min);
+    if (score < sortedIntervals[0].min) return sortedIntervals[0].label;
+    if (score > (sortedIntervals[sortedIntervals.length-1].max ?? Infinity)) return sortedIntervals[sortedIntervals.length-1].label;
+    
     return "Not Classified";
 }
 
