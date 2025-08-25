@@ -32,6 +32,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Your Mood & Interest',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'dep_l1_1', text: 'How often have you found it hard to get excited about things you usually enjoy?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'dep_l1_2', text: 'How often have you felt down, hopeless, or noticed a persistent low mood?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
@@ -49,6 +50,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Feelings of Frustration',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'ang_l1_1', text: 'Have you been feeling more irritable, easily annoyed, or angry than usual?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
 
@@ -62,6 +64,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Your Energy & Drive',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the past week...',
         questions: [
             { id: 'man_l1_1', text: 'Have you been sleeping less but still feeling full of energy?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'man_l1_2', text: 'Have you been starting more new projects or taking more risks than you typically would?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
@@ -86,6 +89,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Feelings of Worry',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'anx_l1_1', text: 'Have you been feeling nervous, anxious, worried, or on edge?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'anx_l1_2', text: 'Have you experienced moments of panic or intense fear?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
@@ -103,6 +107,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Body & Mind Connection',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'som_l1_1', text: 'Have you been bothered by physical aches and pains (like headaches or backaches) that you couldn\'t quite explain?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'som_l1_2', text: 'Have you felt that your physical health concerns weren\'t being taken seriously by others?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
@@ -142,6 +147,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Your Sleep Quality',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'slp_l1_1', text: 'How much have problems with sleep affected your overall quality of life?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             
@@ -165,6 +171,7 @@ export const assessmentSections: AssessmentSection[] = [
     {
         title: 'Repetitive Patterns',
         timeframe: 'Thinking about the last two weeks...',
+        timeframeL2: 'Thinking about the last 7 days...',
         questions: [
             { id: 'rep_l1_1', text: 'Have you been bothered by unpleasant thoughts, urges, or images that repeatedly enter your mind?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'rep_l1_2', text: 'Have you felt driven to do certain things over and over again?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },

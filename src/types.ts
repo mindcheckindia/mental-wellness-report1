@@ -18,6 +18,7 @@ export interface Question {
 export interface AssessmentSection {
     title: string;
     timeframe: string;
+    timeframeL2?: string;
     questions: Question[];
 }
 

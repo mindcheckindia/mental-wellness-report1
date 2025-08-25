@@ -200,12 +200,11 @@ const AssessmentForm: React.FC = () => {
                      <form onSubmit={handleSubmit}>
                         <FormCard>
                             <ProgressTracker part={2} progress={l2Progress} />
-                            <h1 className="text-3xl font-bold text-white mb-6 font-lora">Part 2: Deeper Dive</h1>
-                            <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4">
+                            <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4 pt-6">
                                 {visibleL2Sections.map(section => (
                                     <div key={section.title}>
                                         <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
-                                        <p className="text-slate-300 italic mb-6">{section.timeframe}</p>
+                                        <p className="text-slate-300 italic mb-6">{section.timeframeL2 || section.timeframe}</p>
                                         {section.questions.map(q => (
                                              <fieldset key={q.id} className="mb-8">
                                                 <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
@@ -237,7 +236,7 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
-             {step === 0 && (
+             {step !== 0 && step < 3 && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 whitespace-nowrap sm:left-auto sm:right-4 sm:-translate-x-0 bg-amber-200/90 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
                     PROTOTYPE: Please do not share without permission.
                 </div>
