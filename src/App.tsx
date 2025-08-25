@@ -1,5 +1,6 @@
 
 
+
 import React, { useRef, useState, useEffect } from 'react';
 import { IndividualData } from './types';
 import { globalResources } from './data/globalData';
@@ -66,54 +67,6 @@ const App: React.FC = () => {
             setLoadingState({ isLoading: false, message: '', error: null });
         }
     }, []);
-
-    useEffect(() => {
-        if (!reportData || !reportRef.current) return;
-
-        const observer = new IntersectionObserver((entries, obs) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                
-                const target = entry.target as HTMLElement;
-
-                // For simple sections, just animate the section itself
-                if (!target.querySelector('.domain-card-item')) {
-                    target.classList.add('animate-fade-in-up');
-                    target.classList.remove('opacity-0');
-                } else {
-                    // For the detailed results container, animate its children with a stagger
-                    const children = target.querySelectorAll('.domain-card-item, .disclaimer-item');
-                    children.forEach((child, index) => {
-                        const el = child as HTMLElement;
-                        el.style.animationDelay = `${100 + index * 100}ms`;
-                        el.classList.add('animate-fade-in-up');
-                        el.classList.remove('opacity-0');
-                    });
-                }
-                
-                obs.unobserve(target);
-            });
-        }, { threshold: 0.1 });
-
-        const sections = reportRef.current?.querySelectorAll('.report-section');
-        sections?.forEach(section => {
-            // If it's a container for cards, hide the children, not the container itself
-            const childrenToAnimate = section.querySelectorAll('.domain-card-item, .disclaimer-item');
-            if (childrenToAnimate.length > 0) {
-                childrenToAnimate.forEach(child => child.classList.add('opacity-0'));
-            } else {
-                // Otherwise, hide the whole section
-                section.classList.add('opacity-0');
-            }
-            observer.observe(section);
-        });
-
-        return () => {
-            sections?.forEach(section => {
-                if (section) observer.unobserve(section);
-            });
-        };
-    }, [reportData]);
     
     if (loadingState.isLoading) {
         return (
@@ -153,32 +106,32 @@ const App: React.FC = () => {
                  <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
                     <div className="max-w-7xl w-full">
                         <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
-                            <div className="report-section"><Header /></div>
-                            <div className="report-section"><IndividualInfo data={reportData} /></div>
-                            <div className="report-section"><AtAGlance domains={reportData.domains} /></div>
+                            <div><Header /></div>
+                            <div><IndividualInfo data={reportData} /></div>
+                            <div><AtAGlance domains={reportData.domains} /></div>
 
-                            <div className="mt-16 report-section">
+                            <div className="mt-16">
                                 <h2 className="text-3xl font-bold text-slate-900 mb-6 border-b pb-3 border-slate-300">Your Detailed Results</h2>
                                 <div className="space-y-8 mt-8">
                                     {reportData.domains.map((domain, index) => (
-                                        <div key={index} className="domain-card-item">
+                                        <div key={index}>
                                             <DomainCard domain={domain} index={index} />
                                         </div>
                                     ))}
                                 </div>
-                                <div className="disclaimer-item"><IndividualsDisclaimer /></div>
+                                <div><IndividualsDisclaimer /></div>
                             </div>
                             
-                            <div className="report-section"><GlobalResources resources={globalResources} /></div>
+                            <div><GlobalResources resources={globalResources} /></div>
                             
-                            <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-stretch justify-between gap-8 report-section">
+                            <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-stretch justify-between gap-8">
                                 <VerificationSeal />
                                 <div className="flex-1">
                                      <GeneralDisclaimer />
                                 </div>
                             </div>
                         </div>
-                        <div className="report-section"><NextSteps /></div>
+                        <div><NextSteps /></div>
                     </div>
                 </main>
             </div>
