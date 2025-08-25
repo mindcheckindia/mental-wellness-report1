@@ -25,12 +25,12 @@ const ScoreBar: React.FC<ScoreBarProps> = ({ score, intervals, scoreLabel, minSc
         const scorePerc = Math.max(0, Math.min(100, percentage));
 
         const colorMap: { [key: string]: string } = {
-            'bg-green-500': '#22c55e', 'bg-yellow-500': '#eab308',
-            'bg-orange-500': '#f97316', 'bg-red-500': '#ef4444',
+            'bg-green-500': '#a7f3d0', 'bg-yellow-500': '#fde68a',
+            'bg-orange-500': '#fed7aa', 'bg-red-500': '#fecaca',
         };
 
         const colorStops = sortedIntervals.map(interval => {
-            const color = colorMap[interval.color] || '#d1d5db';
+            const color = colorMap[interval.color] || '#e5e7eb';
             const startPercent = ((interval.min - minVal) / totalDisplayRange) * 100;
             const endPercent = (((interval.max ?? maxVal) - minVal) / totalDisplayRange) * 100;
             return `${color} ${startPercent}%, ${color} ${endPercent}%`;
@@ -58,17 +58,17 @@ const ScoreBar: React.FC<ScoreBarProps> = ({ score, intervals, scoreLabel, minSc
                             left: `clamp(4.5em, ${scorePercentage}%, calc(100% - 4.5em))`, 
                             transform: 'translateX(-50%)' 
                          }}>
-                        <span className="text-sm font-bold text-gray-700 whitespace-nowrap">{scoreLabel}</span>
-                        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-gray-700 mt-1" />
+                        <span className="px-2 py-0.5 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">{scoreLabel}</span>
+                        <div className="w-px h-2 bg-slate-700 mt-1" />
                     </div>
                 )}
                 
-                <div className="h-3 rounded-full" style={{ background: gradient }} />
+                <div className="h-2.5 rounded-full" style={{ background: gradient }} />
 
-                <div className="grid w-full mt-1 items-start" style={{ gridTemplateColumns }}>
+                <div className="grid w-full mt-1.5" style={{ gridTemplateColumns }}>
                     {displaySegments.map((seg, index) => (
                         <div key={index} className="flex flex-col items-center text-center px-1">
-                            <span className="text-xs font-semibold text-gray-600 leading-tight">{seg.label}</span>
+                            <span className="text-xs font-semibold text-slate-600 leading-tight">{seg.label}</span>
                         </div>
                     ))}
                 </div>

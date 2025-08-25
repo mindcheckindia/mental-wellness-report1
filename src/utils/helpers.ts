@@ -16,18 +16,17 @@ export const formatAssessmentDate = (isoDate: string): string => {
 };
 
 const colorMap: { [key: string]: { text: string; border: string; bg: string; iconText: string; } } = {
-    'bg-green-500': { text: 'text-green-700', border: 'border-green-500', bg: 'bg-green-100', iconText: 'text-green-600' },
-    'bg-yellow-500': { text: 'text-yellow-700', border: 'border-yellow-500', bg: 'bg-yellow-100', iconText: 'text-yellow-600' },
-    'bg-amber-400': { text: 'text-amber-700', border: 'border-amber-500', bg: 'bg-amber-100', iconText: 'text-amber-600' },
-    'bg-orange-500': { text: 'text-orange-700', border: 'border-orange-500', bg: 'bg-orange-100', iconText: 'text-orange-600' },
-    'bg-red-500': { text: 'text-red-700', border: 'border-red-500', bg: 'bg-red-100', iconText: 'text-red-600' },
+    'bg-green-500': { text: 'text-teal-800', border: 'border-teal-500', bg: 'bg-teal-50', iconText: 'text-teal-600' },
+    'bg-yellow-500': { text: 'text-amber-800', border: 'border-amber-500', bg: 'bg-amber-50', iconText: 'text-amber-600' },
+    'bg-orange-500': { text: 'text-orange-800', border: 'border-orange-500', bg: 'bg-orange-50', iconText: 'text-orange-600' },
+    'bg-red-500': { text: 'text-rose-800', border: 'border-rose-500', bg: 'bg-rose-50', iconText: 'text-rose-600' },
 };
 
 const defaultStyles = {
-    textColor: 'text-gray-700',
-    borderColor: 'border-gray-400',
-    bgColor: 'bg-gray-100',
-    iconTextColor: 'text-gray-600',
+    textColor: 'text-slate-700',
+    borderColor: 'border-slate-400',
+    bgColor: 'bg-slate-100',
+    iconTextColor: 'text-slate-600',
 };
 
 export const getStylesForScore = (score: number | null, intervals: ReferenceInterval[]) => {
@@ -45,21 +44,14 @@ export const getStylesForScore = (score: number | null, intervals: ReferenceInte
         }
     }
     
-    // Fallback for edge cases, though the loop above should be sufficient
+    // Fallback for edge cases where score might be outside defined max, but should match highest applicable interval.
     if (!intervalColor) {
-        let matched = false;
-        for (const interval of [...intervals].reverse()) {
-             if (score >= interval.min) {
-                 intervalColor = interval.color;
-                 matched = true;
-                 break;
+        const sortedIntervals = [...intervals].sort((a,b) => b.min - a.min); // sort descending
+        for (const interval of sortedIntervals) {
+            if (score >= interval.min) {
+                intervalColor = interval.color;
+                break;
             }
-        }
-        if(!matched){
-             const lowestInterval = intervals[0];
-             if (lowestInterval && (lowestInterval.max === null || score <= lowestInterval.max)) {
-                 intervalColor = lowestInterval.color;
-             }
         }
     }
 

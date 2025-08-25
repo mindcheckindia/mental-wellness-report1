@@ -6,14 +6,21 @@ interface IndividualInfoProps {
   data: Pick<IndividualData, 'firstName' | 'lastName' | 'individualId' | 'email' | 'assessmentDate'>;
 }
 
+const InfoItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div>
+        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="text-lg font-semibold text-slate-800">{value}</p>
+    </div>
+);
+
 const IndividualInfo: React.FC<IndividualInfoProps> = ({ data }) => (
-  <div className="mb-10 p-6 bg-blue-50 rounded-2xl border border-blue-200 shadow-inner">
-    <h2 className="text-2xl sm:text-3xl font-bold text-blue-800 mb-5 border-b pb-3 border-blue-300">Individual Snapshot</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-gray-800 text-lg">
-      <p><strong className="font-semibold text-blue-700">Name:</strong> {data.firstName} {data.lastName}</p>
-      <p><strong className="font-semibold text-blue-700">Individual ID:</strong> {data.individualId}</p>
-      <p><strong className="font-semibold text-blue-700">Email:</strong> {data.email}</p>
-      <p><strong className="font-semibold text-blue-700">Assessment Date:</strong> {formatAssessmentDate(data.assessmentDate)}</p>
+  <div className="mb-12 p-6 bg-slate-50 rounded-xl border border-slate-200">
+    <h2 className="text-2xl font-bold text-slate-800 mb-4">Assessment Details</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+      <InfoItem label="Name" value={`${data.firstName} ${data.lastName}`} />
+      <InfoItem label="Individual ID" value={data.individualId} />
+      <InfoItem label="Email" value={data.email} />
+      <InfoItem label="Assessment Date" value={formatAssessmentDate(data.assessmentDate)} />
     </div>
   </div>
 );

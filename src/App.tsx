@@ -14,7 +14,7 @@ import AtAGlance from './components/AtAGlance';
 import VerificationSeal from './components/VerificationSeal';
 import AssessmentForm from './components/AssessmentForm';
 import { fetchDynamicReportData, fetchInsights } from './services/api';
-import { FeatherIcon } from './components/icons';
+import { BrandIcon } from './components/icons';
 
 declare const html2pdf: any;
 
@@ -95,10 +95,10 @@ const App: React.FC = () => {
     
     if (loadingState.isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-sky-100 to-blue-200 p-4 font-inter text-center">
-                <FeatherIcon className="h-16 w-16 mx-auto text-sky-600 mb-6 animate-pulse" />
-                <h1 className="text-3xl font-bold text-stone-800">{loadingState.message}</h1>
-                <p className="text-stone-600 mt-2">This may take a few moments. Thank you for your patience.</p>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4 font-inter text-center">
+                <BrandIcon className="h-16 w-16 mx-auto text-sky-600 mb-6 animate-pulse" />
+                <h1 className="text-3xl font-bold text-slate-800">{loadingState.message}</h1>
+                <p className="text-slate-600 mt-2">This may take a few moments. Thank you for your patience.</p>
             </div>
         );
     }
@@ -117,23 +117,23 @@ const App: React.FC = () => {
 
     if (reportData) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8 font-inter flex flex-col items-center">
+            <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8 font-inter flex flex-col items-center">
                  <div className="max-w-7xl w-full">
                      <div className="flex justify-between items-center mb-4">
                         <a 
                             href="/"
-                            className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                            className="px-4 py-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
                         >
-                            &larr; Start New Assessment
+                            &larr; New Assessment
                         </a>
                     </div>
-                    <div ref={reportRef} className="bg-white shadow-2xl rounded-3xl p-6 sm:p-8 lg:p-12 border border-blue-200">
+                    <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
                         <Header />
                         <IndividualInfo data={reportData} />
                         <AtAGlance domains={reportData.domains} />
 
-                        <div className="mt-12">
-                            <h2 className="text-3xl font-bold text-blue-800 mb-6 border-b pb-3 border-blue-300">Your Detailed Results</h2>
+                        <div className="mt-16">
+                            <h2 className="text-3xl font-bold text-slate-900 mb-6 border-b pb-3 border-slate-300">Your Detailed Results</h2>
                             <div className="space-y-8 mt-8">
                                 {reportData.domains.map((domain, index) => (
                                     <DomainCard key={index} domain={domain} index={index} />
@@ -144,7 +144,7 @@ const App: React.FC = () => {
 
                         <GlobalResources resources={globalResources} />
                         
-                        <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:justify-between gap-8">
+                        <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-stretch justify-between gap-8">
                             <VerificationSeal />
                             <div className="flex-1">
                                  <GeneralDisclaimer />
