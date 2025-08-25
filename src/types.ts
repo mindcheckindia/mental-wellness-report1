@@ -12,15 +12,12 @@ export interface Question {
         triggerIds: string[];
         threshold: number;
     };
-    answerOptions?: AnswerOption[];
-    customAnswers?: {
-        isReversed: boolean;
-    };
+    answerOptions: AnswerOption[];
 }
 
 export interface AssessmentSection {
     title: string;
-    description: string;
+    timeframe: string;
     questions: Question[];
 }
 

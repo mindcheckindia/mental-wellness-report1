@@ -167,16 +167,16 @@ export const PersonalityIcon: React.FC<IconProps> = (props) => (
 
 // ===== Domain Icon Mapping =====
 export const domainIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
-    'Depression': DepressionIcon,
-    'Anger': AngerIcon,
-    'Mania': ManiaIcon,
-    'Anxiety': AnxietyIcon,
-    'Somatic Symptoms': SomaticIcon,
-    'Suicidal Ideation': SuicideIcon,
-    'Psychosis': PsychosisIcon,
-    'Sleep Problems': SleepIcon,
-    'Memory': MemoryIcon,
-    'Repetitive Thoughts and Behaviours': RepetitiveIcon,
-    'Dissociation': DissociationIcon,
-    'Personality Functioning': PersonalityIcon,
+    'Your Mood & Interest': DepressionIcon,
+    'Feelings of Frustration': AngerIcon,
+    'Your Energy & Drive': ManiaIcon,
+    'Feelings of Worry': AnxietyIcon,
+    'Body & Mind Connection': SomaticIcon,
+    'Thoughts of Self-Harm': SuicideIcon,
+    'Your Perceptions': PsychosisIcon,
+    'Your Sleep Quality': SleepIcon,
+    'Your Focus & Memory': MemoryIcon,
+    'Repetitive Patterns': RepetitiveIcon,
+    'Feeling Grounded': DissociationIcon,
+    'Self & Relationships': PersonalityIcon,
 };

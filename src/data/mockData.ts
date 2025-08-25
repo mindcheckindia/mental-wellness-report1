@@ -10,16 +10,19 @@ export const mockReportData: IndividualData = {
   assessmentDate: new Date().toISOString(),
   domains: [
     {
-      name: 'Depression',
-      about: 'Assesses core symptoms of depression. Score is based on the 8-item PROMIS Emotional Distress–Depression–Short Form, expanded with additional questions.',
+      name: 'Your Mood & Interest',
+      about: 'This area explores your emotional state, including feelings of sadness and your ability to find pleasure in daily life. The score is a standardized T-Score based on the PROMIS framework for clinical accuracy.',
       aboutLink: 'https://www.who.int/news-room/fact-sheets/detail/depression',
       result: 'Moderate',
-      score: 30, // Corresponds to Moderate
+      score: 60.7, 
+      rawScore: 23,
+      tScore: 60.7,
       userInterpretation: 'Moderate',
       referenceIntervals: [
-        { label: 'None to slight', min: 10, max: 27, color: 'bg-green-500' },
-        { label: 'Moderate', min: 28, max: 41, color: 'bg-orange-500' },
-        { label: 'Severe', min: 42, max: 50, color: 'bg-red-500' }
+        { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+        { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+        { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+        { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
       ],
       insightsAndSupport: "John, it appears you're dealing with a noticeable level of depressive symptoms. This can sometimes make it challenging to find motivation or enjoy things as you used to. It may be beneficial to explore these feelings with a professional; a therapist can provide tools and strategies tailored specifically to you.",
       individualsExperienced: [
@@ -28,17 +31,19 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Anger', 
-      about: 'Measures feelings of anger and irritability. Score is based on the 5-item PROMIS Emotional Distress–Anger–Short Form, expanded with an additional question.', 
+      name: 'Feelings of Frustration', 
+      about: 'This reflects how often you may feel annoyed, grouchy, or angry. The score is a standardized T-Score from the PROMIS framework to provide a reliable measure.', 
       aboutLink: 'https://www.apa.org/topics/anger/control', 
       result: 'Mild',
-      score: 17, // Corresponds to Mild
+      score: 55.0,
+      rawScore: 16,
+      tScore: 55.0,
       userInterpretation: 'Mild',
       referenceIntervals: [
-          { label: 'None to slight', min: 6, max: 15, color: 'bg-green-500' },
-          { label: 'Mild', min: 16, max: 18, color: 'bg-yellow-500' },
-          { label: 'Moderate', min: 19, max: 24, color: 'bg-orange-500' },
-          { label: 'Severe', min: 25, max: 30, color: 'bg-red-500' }
+          { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+          { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+          { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+          { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, your results suggest you're navigating some mild feelings of irritability. This might show up as finding yourself more easily frustrated than usual. Exploring practices like taking a brief walk to cool down or noting your triggers can be a helpful next step.",
       individualsExperienced: [
@@ -47,15 +52,16 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Mania', 
-      about: 'Assesses symptoms of mania or hypomania using the Altman Self-Rating Mania Scale. A score of 6 or higher suggests a high probability of a manic or hypomanic condition.', 
+      name: 'Your Energy & Drive', 
+      about: 'This section looks at your energy levels, confidence, and drive, based on the Altman Self-Rating Mania Scale (ASRM). A score of 6 or higher suggests a high probability of experiencing manic or hypomanic symptoms.',
       aboutLink: 'https://www.nimh.nih.gov/health/topics/bipolar-disorder', 
       result: 'Low Probability',
-      score: 5, // Corresponds to Low Probability
+      score: 5, 
+      rawScore: 5,
       userInterpretation: 'Low Probability',
       referenceIntervals: [
-          { label: 'Low Probability', min: 0, max: 8, color: 'bg-green-500' },
-          { label: 'High Probability', min: 9, max: 28, color: 'bg-red-500' }
+          { label: 'Low Probability', min: 0, max: 5, color: 'bg-green-500' },
+          { label: 'High Probability', min: 6, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, it's great that your mood and energy levels seem to be steady. Maintaining a stable routine, especially around sleep, is an excellent way to continue supporting this balance.",
       individualsExperienced: [
@@ -64,17 +70,19 @@ export const mockReportData: IndividualData = {
       ], 
     },
     {
-      name: 'Anxiety',
-      about: 'Evaluates common symptoms of anxiety. Score is based on the 7-item PROMIS Emotional Distress–Anxiety–Short Form, expanded with additional questions.',
+      name: 'Feelings of Worry',
+      about: 'This evaluates common symptoms of anxiety, such as feeling nervous, worried, or on edge. The score is a standardized T-Score based on the PROMIS framework.',
       aboutLink: 'https://www.nimh.nih.gov/health/topics/anxiety-disorders',
       result: 'Moderate',
-      score: 30, // Corresponds to Moderate
+      score: 60.0,
+      rawScore: 20,
+      tScore: 60.0,
       userInterpretation: 'Moderate',
       referenceIntervals: [
-        { label: 'None to slight', min: 10, max: 21, color: 'bg-green-500' },
-        { label: 'Mild', min: 22, max: 27, color: 'bg-yellow-500' },
-        { label: 'Moderate', min: 28, max: 38, color: 'bg-orange-500' },
-        { label: 'Severe', min: 39, max: 50, color: 'bg-red-500' }
+        { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' },
+        { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+        { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' },
+        { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
       ],
       insightsAndSupport: "John, it appears you're managing a moderate degree of anxiety. This can manifest as persistent worry that's hard to control. A therapist can help you understand these patterns and develop effective coping strategies.",
       individualsExperienced: [
@@ -83,17 +91,18 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Somatic Symptoms', 
-      about: 'Focuses on physical symptoms that may be related to psychological distress, based on the Patient Health Questionnaire 15 (PHQ-15).', 
+      name: 'Body & Mind Connection', 
+      about: 'This explores the connection between your mind and body by looking at physical symptoms that can sometimes be related to emotional distress, based on the Patient Health Questionnaire 15 (PHQ-15).',
       aboutLink: 'https://www.psychiatry.org/patients-families/somatic-symptom-disorder/what-is-somatic-symptom-disorder', 
       result: 'High',
-      score: 18, // Corresponds to High
+      score: 18,
+      rawScore: 18,
       userInterpretation: 'High',
       referenceIntervals: [
-          { label: 'Minimal', min: 0, max: 5, color: 'bg-green-500' },
-          { label: 'Low', min: 6, max: 11, color: 'bg-yellow-500' },
-          { label: 'Medium', min: 12, max: 16, color: 'bg-orange-500' },
-          { label: 'High', min: 17, max: 34, color: 'bg-red-500' }
+          { label: 'Minimal', min: 0, max: 4, color: 'bg-green-500' },
+          { label: 'Low', min: 5, max: 9, color: 'bg-yellow-500' },
+          { label: 'Medium', min: 10, max: 14, color: 'bg-orange-500' },
+          { label: 'High', min: 15, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, the high level of physical symptoms you're reporting can be very challenging. Since these feelings can be tough to manage alone, we encourage you to connect with a doctor to discuss these results and rule out any other causes.",
       individualsExperienced: [
@@ -102,15 +111,16 @@ export const mockReportData: IndividualData = {
       ], 
     },
     { 
-      name: 'Suicidal Ideation', 
-      about: 'Screens for thoughts of self-harm. A score of "Slight" or greater indicates need for further inquiry.', 
+      name: 'Thoughts of Self-Harm', 
+      about: 'This is a safety check for thoughts of self-harm. A response of "Slight" or greater indicates a need for further inquiry and support.',
       aboutLink: 'https://988lifeline.org/', 
       result: 'Within normal limits',
       score: 0,
+      rawScore: 0,
       userInterpretation: 'Within normal limits',
       referenceIntervals: [
           { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
-          { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
+          { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, we're glad to see your responses indicate a low risk in this area. Remember, if you ever need support, help is always available through crisis hotlines and mental health professionals.",
       individualsExperienced: [
@@ -119,15 +129,16 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Psychosis', 
-      about: 'Identifies unusual thoughts or perceptions. A score of "Slight" or greater indicates need for further inquiry.', 
+      name: 'Your Perceptions', 
+      about: 'This section identifies unusual thoughts or perceptions that might differ from those of others. A response of "Slight" or greater suggests a need for further conversation.',
       aboutLink: 'https://www.nimh.nih.gov/health/topics/schizophrenia/raise/what-is-psychosis', 
       result: 'Within normal limits',
       score: 0,
+      rawScore: 0,
       userInterpretation: 'Within normal limits',
       referenceIntervals: [
           { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
-          { label: 'Further inquiry indicated', min: 1, max: 4, color: 'bg-red-500' }
+          { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, your results suggest that unusual thoughts or perceptions are not a current concern. Staying grounded and connected to your support system is always a good practice for overall well-being.",
       individualsExperienced: [
@@ -136,17 +147,19 @@ export const mockReportData: IndividualData = {
       ], 
     },
     { 
-      name: 'Sleep Problems', 
-      about: 'Evaluates sleep quality based on the 8-item PROMIS Sleep Disturbance scale. Some questions are reverse-scored.', 
+      name: 'Your Sleep Quality', 
+      about: 'This evaluates your overall sleep experience based on the PROMIS Sleep Disturbance scale. The score is a standardized T-Score for clinical accuracy.',
       aboutLink: 'https://www.sleepfoundation.org/insomnia', 
       result: 'Severe',
-      score: 38, // Corresponds to Severe
+      score: 70.8,
+      rawScore: 38,
+      tScore: 70.8,
       userInterpretation: 'Severe',
       referenceIntervals: [
-          { label: 'None to slight', min: 8, max: 25, color: 'bg-green-500' }, // T < 55
-          { label: 'Mild', min: 26, max: 28, color: 'bg-yellow-500' }, // T 55-59.9
-          { label: 'Moderate', min: 29, max: 36, color: 'bg-orange-500' }, // T 60-69.9
-          { label: 'Severe', min: 37, max: 40, color: 'bg-red-500' } // T >= 70
+          { label: 'None to slight', min: 0, max: 54.9, color: 'bg-green-500' }, 
+          { label: 'Mild', min: 55, max: 59.9, color: 'bg-yellow-500' },
+          { label: 'Moderate', min: 60, max: 69.9, color: 'bg-orange-500' }, 
+          { label: 'Severe', min: 70, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, it seems you are facing severe challenges with your sleep, which can impact all areas of life. We strongly encourage you to discuss this with a doctor; they can help find the best path forward to achieve restful sleep.",
       individualsExperienced: [
@@ -154,15 +167,16 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Memory', 
-      about: 'Assesses memory problems. A score of "Mild" or greater indicates need for further inquiry.', 
+      name: 'Your Focus & Memory', 
+      about: 'This assesses challenges with memory or concentration. A response of "Mild" or greater suggests it may be helpful to look into this further.',
       aboutLink: 'https://www.nia.nih.gov/health/memory-forgetfulness-and-aging-whats-normal-and-whats-not', 
       result: 'Within normal limits',
-      score: 1, // Corresponds to mild concern
+      score: 1,
+      rawScore: 1,
       userInterpretation: 'Within normal limits',
       referenceIntervals: [
           { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-          { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+          { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, you've noted that memory is not a significant concern. Stress and poor sleep can sometimes impact cognition, so continuing to manage those areas will help maintain your focus.",
       individualsExperienced: [
@@ -170,11 +184,12 @@ export const mockReportData: IndividualData = {
       ], 
     },
     { 
-      name: 'Repetitive Thoughts and Behaviours', 
-      about: 'Measures severity of repetitive thoughts and behaviors based on the Florida Obsessive-Compulsive Inventory (FOCI) Severity Scale.', 
+      name: 'Repetitive Patterns', 
+      about: 'This measures the impact of repetitive thoughts and behaviors based on the Florida Obsessive-Compulsive Inventory (FOCI) Severity Scale.',
       aboutLink: 'https://iocdf.org/about-ocd/', 
       result: 'Moderate',
-      score: 2.5, // Corresponds to Moderate
+      score: 2.5,
+      rawScore: 2.5,
       userInterpretation: 'Moderate',
       referenceIntervals: [
           { label: 'None', min: 0, max: 0.9, color: 'bg-green-500' },
@@ -189,15 +204,16 @@ export const mockReportData: IndividualData = {
       ],
     },
     { 
-      name: 'Dissociation', 
-      about: 'Measures experiences of detachment from reality. A score of "Mild" or greater indicates need for further inquiry.', 
+      name: 'Feeling Grounded', 
+      about: 'This explores experiences of feeling detached from yourself, your body, or your surroundings. A response of "Mild" or greater suggests a need for further discussion.',
       aboutLink: 'https://www.nami.org/About-Mental-Illness/Mental-Health-Conditions/Dissociative-Disorders', 
       result: 'Further inquiry indicated',
-      score: 3, // Corresponds to high concern
+      score: 3,
+      rawScore: 3,
       userInterpretation: 'Further inquiry indicated',
       referenceIntervals: [
           { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-          { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+          { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, experiencing feelings of detachment can be unsettling and are challenging to manage alone. We strongly encourage you to connect with a mental health professional to discuss these results and find the best support for you.",
       individualsExperienced: [
@@ -205,15 +221,16 @@ export const mockReportData: IndividualData = {
       ], 
     },
     { 
-      name: 'Personality Functioning', 
-      about: 'Examines long-term patterns in self-perception and relationships. A score of "Mild" or greater indicates need for further inquiry.', 
+      name: 'Self & Relationships', 
+      about: 'This area examines long-term patterns in how you see yourself and connect with others. A response of "Mild" or greater suggests it may be beneficial to explore further.',
       aboutLink: 'https://www.nimh.nih.gov/health/topics/borderline-personality-disorder', 
       result: 'Further inquiry indicated',
-      score: 2, // Corresponds to high concern
+      score: 2,
+      rawScore: 2,
       userInterpretation: 'Further inquiry indicated',
       referenceIntervals: [
           { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
-          { label: 'Further inquiry indicated', min: 2, max: 4, color: 'bg-red-500' }
+          { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, it seems there are some significant challenges in how you see yourself or relate to others, which can be difficult. We recommend talking to a therapist, as they can help you explore these patterns and build healthier relationships and self-esteem.",
       individualsExperienced: [

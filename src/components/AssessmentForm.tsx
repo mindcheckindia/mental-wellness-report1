@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { assessmentSections, defaultAnswerOptions } from '../data/assessmentQuestions';
+import { assessmentSections } from '../data/assessmentQuestions';
 import { FeatherIcon } from './icons';
 import { AssessmentSection, Question } from '../types';
 
@@ -38,14 +38,13 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
         return triggerIds.some(id => (answers[id] ?? 0) >= threshold);
     };
 
-    // Memoize the set of visible sections to avoid re-calculation on every render.
-    // A section is visible if at least one of its questions is visible.
     const visibleSections = useMemo(() => {
-        // First, filter all sections to find which ones might be visible now or could become visible.
-        // Screeners are always visible, and conditional sections depend on current answers.
-        return assessmentSections.filter(section => {
-            return section.questions.some(q => isQuestionVisible(q));
-       });
+        // A section is visible if it contains at least one visible question.
+        // This ensures that sections for follow-up questions only appear after
+        // the user has answered the initial screener questions appropriately.
+        return assessmentSections.filter(section => 
+            section.questions.some(q => isQuestionVisible(q))
+        );
     }, [answers]);
     
     const getVisibleQuestionsForSection = (section: AssessmentSection) => {
@@ -54,6 +53,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
     };
     
     useEffect(() => {
+        // This effect prevents the user from getting stuck on a step that has become
+        // invisible due to changing an answer on a previous page.
         if (step > 0 && step > visibleSections.length) {
             setStep(visibleSections.length);
         }
@@ -61,9 +62,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
 
 
     const nextStep = () => setStep(s => s + 1);
-    const prevStep = () => {
-       setStep(s => Math.max(0, s - 1));
-    };
+    const prevStep = () => setStep(s => Math.max(0, s - 1));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -106,6 +105,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
         if (!currentSection) return false;
 
         const visibleQuestions = getVisibleQuestionsForSection(currentSection);
+        // Only check questions that are explicitly marked as mandatory.
+        // This allows users to skip non-mandatory follow-up questions and still proceed.
         const mandatoryQuestionsToCheck = visibleQuestions.filter(q => q.mandatory);
     
         return mandatoryQuestionsToCheck.every(q => answers[q.id] !== undefined);
@@ -142,13 +143,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = () => {
             <div className="max-w-4xl w-full bg-white p-8 sm:p-12 my-8 rounded-3xl shadow-2xl border border-stone-200">
                 <ProgressTracker current={currentSectionIndex} total={visibleSections.length} />
                 <h2 className="text-3xl font-bold text-stone-800 mb-2">{currentVisibleSection.title}</h2>
-                <p className="text-stone-600 mb-8 text-lg">{currentVisibleSection.description}</p>
+                <p className="text-stone-600 mb-8 text-lg italic">{currentVisibleSection.timeframe}</p>
+                
                 <form onSubmit={handleSubmit} className="space-y-10">
                     {visibleQuestions.map((q, index) => {
-                        const options = q.answerOptions || defaultAnswerOptions;
+                        const options = q.answerOptions; // Use the specific options for each question
                         return (
                             <fieldset key={q.id} className="p-4 border-l-4 border-stone-200">
-                                <legend className="text-lg font-semibold text-stone-800">{`${index + 1}. In the past TWO WEEKS, how much have you been bothered by... ${q.text}`}</legend>
+                                <legend className="text-lg font-semibold text-stone-800 whitespace-pre-wrap">{q.text}</legend>
                                 <div className="mt-4 space-y-3">
                                     {options.map(opt => (
                                         <label key={opt.value} className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer ${answers[q.id] === opt.value ? 'bg-sky-50 border-sky-500 shadow-sm' : 'border-stone-200 hover:border-stone-400'}`}>

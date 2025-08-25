@@ -1,191 +1,195 @@
 
 import { AnswerOption, AssessmentSection } from '../types';
 
-const positiveScreenerThreshold = 2; // "Mild or several days" or greater
+// Thresholds for showing Level 2 questions based on Level 1 answers
+const LEVEL_2_THRESHOLD = 2; // "Mild" or greater
+const HIGH_RISK_THRESHOLD = 1; // "Slight" or greater
 
-// Default answer options aligned with DSM-5 Level 1 Cross-Cutting Symptom Measure
-export const defaultAnswerOptions: AnswerOption[] = [
-    { text: 'Not at all', value: 0 },
-    { text: 'Slight or rare, less than a day or two', value: 1 },
-    { text: 'Mild or several days', value: 2 },
-    { text: 'Moderate or more than half the days', value: 3 },
-    { text: 'Severe or nearly every day', value: 4 },
+// --- Standard Answer Sets ---
+const LEVEL_1_ANSWERS: AnswerOption[] = [
+    { text: 'Not at all, really.', value: 0 },
+    { text: 'Only once or twice.', value: 1 },
+    { text: 'A few times.', value: 2 },
+    { text: 'Fairly often.', value: 3 },
+    { text: 'Almost constantly.', value: 4 },
 ];
 
+const PROMIS_ANSWERS: AnswerOption[] = [
+    { value: 1, text: "I haven't felt this way." },
+    { value: 2, text: "Rarely, if ever." },
+    { value: 3, text: "Sometimes." },
+    { value: 4, text: "Often." },
+    { value: 5, text: "Pretty much always." },
+];
+
+const PHQ15_ANSWERS: AnswerOption[] = [
+    { value: 0, text: "It hasn't bothered me." },
+    { value: 1, text: "It's bothered me a little." },
+    { value: 2, text: "It's bothered me a lot." }
+];
+
+// --- Clinically-Accurate Assessment Structure with User-Friendly Language ---
 export const assessmentSections: AssessmentSection[] = [
     {
-        title: 'Depression',
-        description: 'These questions ask about feelings related to mood and interest in activities.',
+        title: 'Your Mood & Interest',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'dep_1', text: 'Little interest or pleasure in doing things?', mandatory: true },
-            { id: 'dep_2', text: 'Feeling down, depressed, or hopeless?', mandatory: true },
-            { id: 'dep_3', text: 'I felt worthless.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_4', text: 'I felt that I had nothing to look forward to.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_5', text: 'I felt helpless.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_6', text: 'I felt sad.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_7', text: 'I felt like a failure.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_8', text: 'I felt depressed.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_9', text: 'I felt unhappy.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
-            { id: 'dep_10', text: 'I felt hopeless.', mandatory: false, condition: { triggerIds: ['dep_1', 'dep_2'], threshold: positiveScreenerThreshold }},
+            { id: 'dep_l1_1', text: 'How often have you found it hard to get excited about things you usually enjoy?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'dep_l1_2', text: 'How often have you felt down, hopeless, or noticed a persistent low mood?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            
+            { id: 'dep_l2_1', text: '(Thinking about the last 7 days...)\nI\'ve felt like I\'m not good enough.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_2', text: 'I\'ve felt like there was nothing to look forward to.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_3', text: 'I\'ve felt helpless.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_4', text: 'I\'ve felt sad.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_5', text: 'I\'ve felt like a failure.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_6', text: 'I\'ve felt depressed.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_7', text: 'I\'ve felt unhappy.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_8', text: 'I\'ve felt hopeless.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
         ]
     },
     {
-        title: 'Anger',
-        description: 'These questions relate to feelings of irritability and anger.',
+        title: 'Feelings of Frustration',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'ang_1', text: 'Feeling more irritated, grouchy, or angry than usual?', mandatory: true },
-            { id: 'ang_2', text: 'I was irritated more than people knew.', mandatory: false, condition: { triggerIds: ['ang_1'], threshold: positiveScreenerThreshold }},
-            { id: 'ang_3', text: 'I felt angry.', mandatory: false, condition: { triggerIds: ['ang_1'], threshold: positiveScreenerThreshold }},
-            { id: 'ang_4', text: 'I felt like I was ready to explode.', mandatory: false, condition: { triggerIds: ['ang_1'], threshold: positiveScreenerThreshold }},
-            { id: 'ang_5', text: 'I was grouchy.', mandatory: false, condition: { triggerIds: ['ang_1'], threshold: positiveScreenerThreshold }},
-            { id: 'ang_6', text: 'I felt annoyed.', mandatory: false, condition: { triggerIds: ['ang_1'], threshold: positiveScreenerThreshold }},
+            { id: 'ang_l1_1', text: 'Have you been feeling more irritable, easily annoyed, or angry than usual?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+
+            { id: 'ang_l2_1', text: '(Thinking about the last 7 days...)\nI was more irritable than people around me might have known.', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_2', text: 'I felt angry.', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_3', text: 'I felt like I was ready to explode.', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_4', text: 'I felt grouchy.', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_5', text: 'I felt annoyed.', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
         ]
     },
     {
-        title: 'Mania',
-        description: 'These questions ask about periods of high energy, elevated mood, and increased activity.',
+        title: 'Your Energy & Drive',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'man_1', text: 'Sleeping less than usual, but still have a lot of energy?', mandatory: true },
-            { id: 'man_2', text: 'Starting lots more projects than usual or doing more risky things than usual?', mandatory: true },
-            { id: 'man_3', text: 'How have you been feeling in terms of being happier or more cheerful?', mandatory: false, condition: { triggerIds: ['man_1', 'man_2'], threshold: positiveScreenerThreshold }, answerOptions: [
-                { value: 0, text: "I do not feel happier or more cheerful than usual." },
-                { value: 1, text: "I occasionally feel happier or more cheerful than usual." },
-                { value: 2, text: "I often feel happier or more cheerful than usual." },
-                { value: 3, text: "I feel happier or more cheerful than usual most of the time." },
-                { value: 4, text: "I feel happier or more cheerful than usual all of the time." },
+            { id: 'man_l1_1', text: 'Have you been sleeping less but still feeling full of energy?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'man_l1_2', text: 'Have you been starting more new projects or taking more risks than you typically would?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            
+            { id: 'man_l2_1', text: '(Thinking about the last week...)\nWhich of these best describes your mood?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
+                { value: 0, text: "I haven't felt unusually happy or cheerful." }, { value: 1, text: "I've occasionally felt happier than usual." }, { value: 2, text: "I've often felt happier than usual." }, { value: 3, text: "I've felt happier most of the time." }, { value: 4, text: "I've felt happier and more cheerful constantly." },
             ]},
-            { id: 'man_4', text: 'How have you been feeling in terms of self-confidence?', mandatory: false, condition: { triggerIds: ['man_1', 'man_2'], threshold: positiveScreenerThreshold }, answerOptions: [
-                { value: 0, text: "I do not feel more self-confident than usual." },
-                { value: 1, text: "I occasionally feel more self-confident than usual." },
-                { value: 2, text: "I often feel more self-confident than usual." },
-                { value: 3, text: "I frequently feel more self-confident than usual." },
-                { value: 4, text: "I feel extremely self-confident all of the time." },
+            { id: 'man_l2_2', text: 'Which of these best describes your self-confidence?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
+                { value: 0, text: "I haven't felt more self-confident than usual." }, { value: 1, text: "I've occasionally felt more self-confident." }, { value: 2, text: "I've often felt more self-confident." }, { value: 3, text: "I've frequently felt more self-confident." }, { value: 4, text: "I've felt extremely self-confident all the time." },
             ]},
-            { id: 'man_5', text: 'How has your sleep been?', mandatory: false, condition: { triggerIds: ['man_1', 'man_2'], threshold: positiveScreenerThreshold }, answerOptions: [
-                { value: 0, text: "I do not need less sleep than usual." },
-                { value: 1, text: "I occasionally need less sleep than usual." },
-                { value: 2, text: "I often need less sleep than usual." },
-                { value: 3, text: "I frequently need less sleep than usual." },
-                { value: 4, text: "I can go all day and all night without any sleep and still not feel tired." },
+            { id: 'man_l2_3', text: 'Which of these best describes your need for sleep?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
+                { value: 0, text: "I haven't needed less sleep than usual." }, { value: 1, text: "I've occasionally needed less sleep." }, { value: 2, text: "I've often needed less sleep." }, { value: 3, text: "I've frequently needed less sleep." }, { value: 4, text: "I can go without sleep and still not feel tired." },
             ]},
-            { id: 'man_6', text: 'How has your talking been?', mandatory: false, condition: { triggerIds: ['man_1', 'man_2'], threshold: positiveScreenerThreshold }, answerOptions: [
-                { value: 0, text: "I do not talk more than usual." },
-                { value: 1, text: "I occasionally talk more than usual." },
-                { value: 2, text: "I often talk more than usual." },
-                { value: 3, text: "I frequently talk more than usual." },
-                { value: 4, text: "I talk constantly and cannot be interrupted." },
+            { id: 'man_l2_4', text: 'Which of these best describes how much you\'ve been talking?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
+                { value: 0, text: "I haven't been talking more than usual." }, { value: 1, text: "I've occasionally talked more than usual." }, { value: 2, text: "I've often talked more than usual." }, { value: 3, text: "I've frequently talked more than usual." }, { value: 4, text: "I've been talking constantly and can't be interrupted." },
             ]},
-            { id: 'man_7', text: 'How have your activity levels been (either socially, sexually, at work, home, or school)?', mandatory: false, condition: { triggerIds: ['man_1', 'man_2'], threshold: positiveScreenerThreshold }, answerOptions: [
-                { value: 0, text: "I have not been more active than usual." },
-                { value: 1, text: "I have occasionally been more active than usual." },
-                { value: 2, text: "I have often been more active than usual." },
-                { value: 3, text: "I have frequently been more active than usual." },
-                { value: 4, text: "I am constantly more active or on the go all the time." },
+            { id: 'man_l2_5', text: 'Which of these best describes your activity level (socially, at work, etc.)?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
+                { value: 0, text: "I haven't been more active than usual." }, { value: 1, text: "I've occasionally been more active." }, { value: 2, text: "I've often been more active." }, { value: 3, text: "I've frequently been more active." }, { value: 4, text: "I'm constantly active or on the go." },
             ]},
         ]
     },
     {
-        title: 'Anxiety',
-        description: 'These questions ask about feelings of nervousness, worry, and fear.',
+        title: 'Feelings of Worry',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'anx_1', text: 'Feeling nervous, anxious, frightened, worried, or on edge?', mandatory: true },
-            { id: 'anx_2', text: 'Feeling panic or being frightened?', mandatory: true },
-            { id: 'anx_3', text: 'Avoiding situations that make you anxious?', mandatory: true },
-            { id: 'anx_4', text: 'I felt fearful.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_5', text: 'I felt anxious.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_6', text: 'I felt worried.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_7', text: 'I found it hard to focus on anything other than my anxiety.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_8', text: 'I felt nervous.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_9', text: 'I felt uneasy.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
-            { id: 'anx_10', text: 'I felt tense.', mandatory: false, condition: { triggerIds: ['anx_1', 'anx_2', 'anx_3'], threshold: positiveScreenerThreshold }},
+            { id: 'anx_l1_1', text: 'Have you been feeling nervous, anxious, worried, or on edge?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'anx_l1_2', text: 'Have you experienced moments of panic or intense fear?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'anx_l1_3', text: 'Have you found yourself actively avoiding situations that make you anxious?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+
+            { id: 'anx_l2_1', text: '(Thinking about the last 7 days...)\nI\'ve felt fearful.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_2', text: 'I\'ve felt anxious.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_3', text: 'I\'ve felt worried.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_4', text: 'I\'ve found it hard to focus on anything other than my anxiety.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_5', text: 'I\'ve felt nervous.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_6', text: 'I\'ve felt uneasy.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_7', text: 'I\'ve felt tense.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
         ]
     },
     {
-        title: 'Somatic Symptoms',
-        description: 'These questions are about physical feelings and symptoms.',
+        title: 'Body & Mind Connection',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'som_1', text: 'Unexplained aches and pains (e.g., head, back, joints, abdomen, legs)?', mandatory: true },
-            { id: 'som_2', text: 'Feeling that your illnesses are not being taken seriously enough?', mandatory: true },
-            { id: 'som_3', text: 'Stomach pain?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_4', text: 'Back pain?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_5', text: 'Pain in your arms, legs, or joints (knees, hips, etc.)?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_6', text: 'Menstrual cramps or other problems with your periods (WOMEN ONLY)?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_7', text: 'Headaches?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_8', text: 'Chest pain?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_9', text: 'Dizziness?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_10', text: 'Fainting spells?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_11', text: 'Feeling your heart pound or race?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_12', text: 'Shortness of breath?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_13', text: 'Pain or problems during sexual intercourse?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_14', text: 'Constipation, loose bowels, or diarrhea?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_15', text: 'Nausea, gas, or indigestion?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_16', text: 'Feeling tired or having low energy?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
-            { id: 'som_17', text: 'Trouble sleeping?', mandatory: false, condition: { triggerIds: ['som_1', 'som_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Not bothered at all' }, { value: 1, text: 'Bothered a little' }, { value: 2, text: 'Bothered a lot' } ]},
+            { id: 'som_l1_1', text: 'Have you been bothered by physical aches and pains (like headaches or backaches) that you couldn\'t quite explain?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'som_l1_2', text: 'Have you felt that your physical health concerns weren\'t being taken seriously by others?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            
+            { id: 'som_l2_1', text: '(During the past 7 days...)\nHow much have you been bothered by stomach pain?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_2', text: 'How much have you been bothered by back pain?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_3', text: 'How much have you been bothered by pain in your arms, legs, or joints?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_4', text: 'How much have you been bothered by menstrual cramps or other period-related issues? (If not applicable, please select "Not bothered")', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_5', text: 'How much have you been bothered by headaches?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_6', text: 'How much have you been bothered by chest pain?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_7', text: 'How much have you been bothered by dizziness?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_8', text: 'How much have you been bothered by fainting spells?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_9', text: 'How much have you been bothered by feeling your heart pound or race?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_10', text: 'How much have you been bothered by shortness of breath?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_11', text: 'How much have you been bothered by pain or problems during sexual intercourse?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_12', text: 'How much have you been bothered by constipation, loose bowels, or diarrhea?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_13', text: 'How much have you been bothered by nausea, gas, or indigestion?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_14', text: 'How much have you been bothered by feeling tired or having low energy?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
+            { id: 'som_l2_15', text: 'How much have you been bothered by trouble sleeping?', mandatory: false, condition: { triggerIds: ['som_l1_1', 'som_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PHQ15_ANSWERS },
         ]
     },
     {
-        title: 'Suicidal Ideation',
-        description: 'This section asks about thoughts of self-harm.',
+        title: 'Thoughts of Self-Harm',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'sui_1', text: 'Thoughts of actually hurting yourself?', mandatory: true },
+            { id: 'sui_l1_1', text: 'Have you had any thoughts of hurting yourself?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
         ]
     },
     {
-        title: 'Psychosis',
-        description: 'This section asks about unusual experiences or thoughts.',
+        title: 'Your Perceptions',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'psy_1', text: 'Hearing things other people couldn’t hear, such as voices even when no one was around?', mandatory: true },
-            { id: 'psy_2', text: 'Feeling that someone could hear your thoughts, or that you could hear what another person was thinking?', mandatory: true },
+            { id: 'psy_l1_1', text: 'Have you heard things other people couldn’t hear, like voices, when no one was around?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'psy_l1_2', text: 'Have you ever felt that people could hear your thoughts, or that you could hear what they were thinking?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
         ]
     },
     {
-        title: 'Sleep Problems',
-        description: 'These questions are about your sleep quality.',
+        title: 'Your Sleep Quality',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'slp_1', text: 'Problems with sleep that affected your sleep quality over all?', mandatory: true },
-            { id: 'slp_2', text: 'My sleep was restless.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: false }, answerOptions: [ { value: 1, text: 'Not at all' }, { value: 2, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 4, text: 'Quite a bit' }, { value: 5, text: 'Very much' } ]},
-            { id: 'slp_3', text: 'I was satisfied with my sleep.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: true }, answerOptions: [ { value: 5, text: 'Not at all' }, { value: 4, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 2, text: 'Quite a bit' }, { value: 1, text: 'Very much' } ]},
-            { id: 'slp_4', text: 'My sleep was refreshing.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: true }, answerOptions: [ { value: 5, text: 'Not at all' }, { value: 4, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 2, text: 'Quite a bit' }, { value: 1, text: 'Very much' } ]},
-            { id: 'slp_5', text: 'I had difficulty falling asleep.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: false }, answerOptions: [ { value: 1, text: 'Not at all' }, { value: 2, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 4, text: 'Quite a bit' }, { value: 5, text: 'Very much' } ]},
-            { id: 'slp_6', text: 'I had trouble staying asleep.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: false }, answerOptions: [ { value: 1, text: 'Never' }, { value: 2, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 4, text: 'Often' }, { value: 5, text: 'Always' } ]},
-            { id: 'slp_7', text: 'I had trouble sleeping.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: false }, answerOptions: [ { value: 1, text: 'Never' }, { value: 2, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 4, text: 'Often' }, { value: 5, text: 'Always' } ]},
-            { id: 'slp_8', text: 'I got enough sleep.', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: true }, answerOptions: [ { value: 5, text: 'Never' }, { value: 4, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 2, text: 'Often' }, { value: 1, text: 'Always' } ]},
-            { id: 'slp_9', text: 'My sleep quality was...', mandatory: false, condition: { triggerIds: ['slp_1'], threshold: positiveScreenerThreshold }, customAnswers: { isReversed: true }, answerOptions: [ { value: 5, text: 'Very Poor' }, { value: 4, text: 'Poor' }, { value: 3, text: 'Fair' }, { value: 2, text: 'Good' }, { value: 1, text: 'Very Good' } ]},
+            { id: 'slp_l1_1', text: 'How much have problems with sleep affected your overall quality of life?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            
+            { id: 'slp_l2_1', text: '(Thinking about the last 7 days...)\nMy sleep was restless.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 1, text: 'Not at all' }, { value: 2, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 4, text: 'Quite a bit' }, { value: 5, text: 'Very much' } ]},
+            { id: 'slp_l2_2', text: 'I was satisfied with my sleep.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: 'Not at all' }, { value: 4, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 2, text: 'Quite a bit' }, { value: 1, text: 'Very much' } ]},
+            { id: 'slp_l2_3', text: 'My sleep was refreshing.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: 'Not at all' }, { value: 4, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 2, text: 'Quite a bit' }, { value: 1, text: 'Very much' } ]},
+            { id: 'slp_l2_4', text: 'I had difficulty falling asleep.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 1, text: 'Not at all' }, { value: 2, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 4, text: 'Quite a bit' }, { value: 5, text: 'Very much' } ]},
+            { id: 'slp_l2_5', text: 'I had trouble staying asleep.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'slp_l2_6', text: 'I had trouble sleeping.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'slp_l2_7', text: 'I got enough sleep.', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: "I haven't" }, { value: 4, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 2, text: 'Often' }, { value: 1, text: 'Always' } ]},
+            { id: 'slp_l2_8', text: 'How would you rate your sleep quality overall?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: 'Very Poor' }, { value: 4, text: 'Poor' }, { value: 3, text: 'Fair' }, { value: 2, text: 'Good' }, { value: 1, text: 'Very Good' } ]},
         ]
     },
     {
-        title: 'Memory',
-        description: 'This question asks about problems with memory.',
+        title: 'Your Focus & Memory',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'mem_1', text: 'Problems with memory (e.g., learning new information) or with location (e.g., finding your way home)?', mandatory: true },
+            { id: 'mem_l1_1', text: 'Have you had problems with your memory or with figuring out where you are?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
         ]
     },
     {
-        title: 'Repetitive Thoughts & Behaviors',
-        description: 'This section asks about repetitive thoughts or actions.',
+        title: 'Repetitive Patterns',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'rep_1', text: 'Unpleasant thoughts, urges, or images that repeatedly enter your mind?', mandatory: true },
-            { id: 'rep_2', text: 'Feeling driven to perform certain behaviors or mental acts over and over again?', mandatory: true },
-            { id: 'rep_3', text: 'On average, how much time is occupied by these thoughts or behaviors each day?', mandatory: false, condition: { triggerIds: ['rep_1', 'rep_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'None' }, { value: 1, text: 'Mild (Less than an hour a day)' }, { value: 2, text: 'Moderate (1 to 3 hours a day)' }, { value: 3, text: 'Severe (3 to 8 hours a day)' }, { value: 4, text: 'Extreme (more than 8 hours a day)' } ]},
-            { id: 'rep_4', text: 'How much distress do these thoughts or behaviors cause you?', mandatory: false, condition: { triggerIds: ['rep_1', 'rep_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'None' }, { value: 1, text: 'Mild (slightly disturbing)' }, { value: 2, text: 'Moderate (disturbing but still manageable)' }, { value: 3, text: 'Severe (very disturbing)' }, { value: 4, text: 'Extreme (overwhelming distress)' } ]},
-            { id: 'rep_5', text: 'How hard is it for you to control these thoughts or behaviors?', mandatory: false, condition: { triggerIds: ['rep_1', 'rep_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'Complete control' }, { value: 1, text: 'Much control' }, { value: 2, text: 'Moderate control' }, { value: 3, text: 'Little control' }, { value: 4, text: 'No control' } ]},
-            { id: 'rep_6', text: 'How much do these thoughts or behaviors cause you to avoid doing anything, going anyplace, or being with anyone?', mandatory: false, condition: { triggerIds: ['rep_1', 'rep_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'No avoidance' }, { value: 1, text: 'Mild (occasional avoidance)' }, { value: 2, text: 'Moderate (regularly avoid)' }, { value: 3, text: 'Severe (frequent avoidance)' }, { value: 4, text: 'Extreme (nearly complete avoidance)' } ]},
-            { id: 'rep_7', text: 'How much do these thoughts or behaviors interfere with school, work, or your social or family life?', mandatory: false, condition: { triggerIds: ['rep_1', 'rep_2'], threshold: positiveScreenerThreshold }, answerOptions: [ { value: 0, text: 'None' }, { value: 1, text: 'Mild (slight interference)' }, { value: 2, text: 'Moderate (definite interference)' }, { value: 3, text: 'Severe (substantial interference)' }, { value: 4, text: 'Extreme (near-total interference)' } ]},
+            { id: 'rep_l1_1', text: 'Have you been bothered by unpleasant thoughts, urges, or images that repeatedly enter your mind?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'rep_l1_2', text: 'Have you felt driven to do certain things over and over again?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            
+            { id: 'rep_l2_1', text: '(Thinking about the last 7 days...)\nOn average, how much of your day is taken up by these thoughts or behaviors?', mandatory: false, condition: { triggerIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 0, text: 'No time at all' }, { value: 1, text: 'A little (less than 1 hr/day)' }, { value: 2, text: 'A moderate amount (1-3 hrs/day)' }, { value: 3, text: 'A lot (3-8 hrs/day)' }, { value: 4, text: 'An extreme amount (over 8 hrs/day)' } ]},
+            { id: 'rep_l2_2', text: 'How much distress or emotional discomfort have these caused you?', mandatory: false, condition: { triggerIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 0, text: 'None' }, { value: 1, text: 'Mild (a little disturbing)' }, { value: 2, text: 'Moderate (disturbing but manageable)' }, { value: 3, text: 'Severe (very disturbing)' }, { value: 4, text: 'Extreme (overwhelmingly distressing)' } ]},
+            { id: 'rep_l2_3', text: 'How hard has it been for you to control them?', mandatory: false, condition: { triggerIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 0, text: 'Easy (complete control)' }, { value: 1, text: 'Fairly easy (much control)' }, { value: 2, text: 'Somewhat hard (moderate control)' }, { value: 3, text: 'Very hard (little control)' }, { value: 4, text: 'Impossible (no control)' } ]},
+            { id: 'rep_l2_4', text: 'How often have they made you avoid certain situations, places, or people?', mandatory: false, condition: { triggerIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 0, text: 'Not at all' }, { value: 1, text: 'Mildly (occasional avoidance)' }, { value: 2, text: 'Moderately (regular avoidance)' }, { value: 3, text: 'Severely (frequent avoidance)' }, { value: 4, text: 'Extremely (nearly complete avoidance)' } ]},
+            { id: 'rep_l2_5', text: 'How much have they interfered with your daily life (school, work, social life, etc.)?', mandatory: false, condition: { triggerIds: ['rep_l1_1', 'rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 0, text: 'No interference' }, { value: 1, text: 'Mild (slight interference)' }, { value: 2, text: 'Moderate (definite interference)' }, { value: 3, text: 'Severe (substantial interference)' }, { value: 4, text: 'Extreme (near-total interference)' } ]},
         ]
     },
     {
-        title: 'Dissociation',
-        description: 'This question asks about feelings of detachment.',
+        title: 'Feeling Grounded',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'dis_1', text: 'Feeling detached or distant from yourself, your body, your physical surroundings, or your memories?', mandatory: true },
+            { id: 'dis_l1_1', text: 'Have you had moments where you felt detached or distant from yourself, your body, or your surroundings?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
         ]
     },
     {
-        title: 'Personality Functioning',
-        description: 'This section asks about your sense of self and relationships.',
+        title: 'Self & Relationships',
+        timeframe: 'Thinking about the last two weeks...',
         questions: [
-            { id: 'per_1', text: 'Not knowing who you really are or what you want out of life?', mandatory: true },
-            { id: 'per_2', text: 'Not feeling close to other people or enjoying your relationships with them?', mandatory: true },
+            { id: 'per_l1_1', text: 'Have you felt unsure about who you really are or what you want out of life?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'per_l1_2', text: 'Have you felt distant from other people or found it hard to enjoy your relationships?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
         ]
     }
 ];
