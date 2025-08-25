@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useState, useEffect } from 'react';
 import { IndividualData } from './types';
 import { globalResources } from './data/globalData';
@@ -14,7 +15,6 @@ import VerificationSeal from './components/VerificationSeal';
 import AssessmentForm from './components/AssessmentForm';
 import { fetchDynamicReportData, fetchInsights } from './services/api';
 import { BrandIcon } from './components/icons';
-import ReportActions from './components/ReportActions';
 import NextSteps from './components/NextSteps';
 
 const App: React.FC = () => {
@@ -33,7 +33,6 @@ const App: React.FC = () => {
 
         if (isTestMode) {
             setLoadingState({ isLoading: true, message: 'Loading test report...', error: null });
-            // Use a timeout to simulate a small loading delay for better UX
             setTimeout(() => {
                 setReportData(mockReportData);
                 setLoadingState({ isLoading: false, message: '', error: null });
@@ -71,19 +70,41 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!reportData || !reportRef.current) return;
 
-        const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver((entries, obs) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-fade-in-up');
-                    entry.target.classList.remove('opacity-0');
-                    observer.unobserve(entry.target);
+                if (!entry.isIntersecting) return;
+                
+                const target = entry.target as HTMLElement;
+
+                // For simple sections, just animate the section itself
+                if (!target.querySelector('.domain-card-item')) {
+                    target.classList.add('animate-fade-in-up');
+                    target.classList.remove('opacity-0');
+                } else {
+                    // For the detailed results container, animate its children with a stagger
+                    const children = target.querySelectorAll('.domain-card-item, .disclaimer-item');
+                    children.forEach((child, index) => {
+                        const el = child as HTMLElement;
+                        el.style.animationDelay = `${100 + index * 100}ms`;
+                        el.classList.add('animate-fade-in-up');
+                        el.classList.remove('opacity-0');
+                    });
                 }
+                
+                obs.unobserve(target);
             });
         }, { threshold: 0.1 });
 
         const sections = reportRef.current?.querySelectorAll('.report-section');
         sections?.forEach(section => {
-            section.classList.add('opacity-0'); // Start hidden
+            // If it's a container for cards, hide the children, not the container itself
+            const childrenToAnimate = section.querySelectorAll('.domain-card-item, .disclaimer-item');
+            if (childrenToAnimate.length > 0) {
+                childrenToAnimate.forEach(child => child.classList.add('opacity-0'));
+            } else {
+                // Otherwise, hide the whole section
+                section.classList.add('opacity-0');
+            }
             observer.observe(section);
         });
 
@@ -119,7 +140,16 @@ const App: React.FC = () => {
     if (reportData) {
         return (
             <div className="min-h-screen bg-slate-100 font-inter">
-                 <ReportActions />
+                 <header className="bg-slate-100 py-3 border-b border-slate-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end items-center">
+                        <a 
+                            href="/" 
+                            className="px-5 py-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm shadow-sm"
+                        >
+                            &larr; New Assessment
+                        </a>
+                    </div>
+                </header>
                  <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
                     <div className="max-w-7xl w-full">
                         <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
@@ -131,12 +161,12 @@ const App: React.FC = () => {
                                 <h2 className="text-3xl font-bold text-slate-900 mb-6 border-b pb-3 border-slate-300">Your Detailed Results</h2>
                                 <div className="space-y-8 mt-8">
                                     {reportData.domains.map((domain, index) => (
-                                        <div key={index} className="report-section">
+                                        <div key={index} className="domain-card-item">
                                             <DomainCard domain={domain} index={index} />
                                         </div>
                                     ))}
                                 </div>
-                                <div className="report-section"><IndividualsDisclaimer /></div>
+                                <div className="disclaimer-item"><IndividualsDisclaimer /></div>
                             </div>
                             
                             <div className="report-section"><GlobalResources resources={globalResources} /></div>
