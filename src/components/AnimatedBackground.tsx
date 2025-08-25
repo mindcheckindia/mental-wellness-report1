@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useEffect } from 'react';
 
 // A simple random function.
@@ -52,7 +53,7 @@ const AnimatedBackground: React.FC = () => {
                     y: random(-height, 0),
                     size: random(4, 10),
                     color: PALETTE.leaves[Math.floor(random(0, PALETTE.leaves.length))],
-                    speedY: random(0.6, 1.8),
+                    speedY: random(0.2, 0.8), // Reduced speed for a slower, calmer effect
                     sway: random(0, Math.PI * 2),
                     swaySpeed: random(0.01, 0.03),
                     swayAmplitude: random(0.5, 2.0),
