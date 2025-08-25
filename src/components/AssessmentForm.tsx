@@ -234,6 +234,11 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
+             {step === 0 && (
+                <div className="absolute top-4 right-4 bg-amber-200/90 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                    PROTOTYPE: Please do not share without permission.
+                </div>
+            )}
             {renderContent()}
         </div>
     );
