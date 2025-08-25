@@ -37,9 +37,9 @@ const FormCard: React.FC<{children: React.ReactNode; className?: string}> = ({ c
 );
 
 const videos = {
-    welcome: 'https://videos.pexels.com/video-files/2852599/2852599-hd_1920_1080_25fps.mp4',
-    details: 'https://videos.pexels.com/video-files/854331/854331-hd_1920_1080_24fps.mp4',
-    assessment: 'https://videos.pexels.com/video-files/2356012/2356012-hd_1920_1080_25fps.mp4',
+    welcome: 'https://videos.pexels.com/video-files/854255/854255-hd_1920_1080_25fps.mp4',
+    details: 'https://videos.pexels.com/video-files/3124223/3124223-hd_1920_1080_25fps.mp4',
+    assessment: 'https://videos.pexels.com/video-files/854247/854247-hd_1920_1080_25fps.mp4',
 };
 
 const AssessmentForm: React.FC = () => {
