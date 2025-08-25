@@ -36,6 +36,12 @@ const FormCard: React.FC<{children: React.ReactNode; className?: string}> = ({ c
     </div>
 );
 
+const videos = {
+    welcome: 'https://videos.pexels.com/video-files/2852599/2852599-hd_1920_1080_25fps.mp4',
+    details: 'https://videos.pexels.com/video-files/854331/854331-hd_1920_1080_24fps.mp4',
+    assessment: 'https://videos.pexels.com/video-files/2356012/2356012-hd_1920_1080_25fps.mp4',
+};
+
 const AssessmentForm: React.FC = () => {
     const [step, setStep] = useState(0); // 0:Welcome, 1:Commitment, 2:Details, 3:L1, 4:L2
     const [userDetails, setUserDetails] = useState({ firstName: '', lastName: '', email: '' });
@@ -43,6 +49,7 @@ const AssessmentForm: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [commitmentText, setCommitmentText] = useState('');
     const [shuffledOptions, setShuffledOptions] = useState<{ [key: string]: AnswerOption[] }>({});
+    const [currentVideo, setCurrentVideo] = useState(videos.welcome);
 
     useEffect(() => {
         // Pre-shuffle all question options on component mount to keep them stable
@@ -53,6 +60,13 @@ const AssessmentForm: React.FC = () => {
         }, {} as { [key: string]: AnswerOption[] });
         setShuffledOptions(shuffled);
     }, []);
+
+    useEffect(() => {
+        // Change background video based on the current step
+        if (step <= 1) setCurrentVideo(videos.welcome);
+        else if (step === 2) setCurrentVideo(videos.details);
+        else setCurrentVideo(videos.assessment);
+    }, [step]);
     
     // --- L1 and L2 Questions Logic ---
     const l1Sections = useMemo(() => assessmentSections.map(section => ({
@@ -108,8 +122,9 @@ const AssessmentForm: React.FC = () => {
                 return (
                     <FormCard className="text-center">
                         <BrandIcon className="h-16 w-16 mx-auto text-sky-400 mb-6" />
-                        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 font-lora">Welcome to Your Clarity Assessment</h1>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-8">This assessment evaluates your responses across 12 key domains based on DSM-5-TR guidelines—the gold standard in mental health. All information is treated with the strictest confidentiality and safeguarded by robust security protocols.</p>
+                        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 font-lora">Welcome to Your Mental Well-Being Assessment</h1>
+                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This assessment evaluates your responses across 12 key domains based on DSM-5-TR guidelines—the gold standard in mental health.</p>
+                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-8">Your privacy is our top priority. All data you provide is <strong className="text-sky-300">encrypted</strong> and handled with the highest privacy standards to ensure your information remains secure and confidential.</p>
                         <button onClick={() => setStep(1)} className="px-12 py-4 bg-sky-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-sky-600 transition-all duration-300 transform hover:scale-105">
                             Get Started
                         </button>
@@ -228,8 +243,8 @@ const AssessmentForm: React.FC = () => {
     return (
         <div className="min-h-screen font-inter flex flex-col items-center justify-center p-4 relative overflow-hidden">
             <div className="fixed inset-0 w-full h-full -z-10">
-                 <video autoPlay loop muted playsInline className="w-full h-full object-cover" poster="https://i.imgur.com/2yZv2sE.jpeg">
-                    <source src="https://videos.pexels.com/video-files/853870/853870-hd_1920_1080_25fps.mp4" type="video/mp4" />
+                 <video key={currentVideo} autoPlay loop muted playsInline className="w-full h-full object-cover transition-opacity duration-1000">
+                    <source src={currentVideo} type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-slate-900/70"></div>
             </div>

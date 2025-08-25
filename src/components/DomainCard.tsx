@@ -77,7 +77,7 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                         <ScoreBar 
                             score={domain.score} 
                             intervals={domain.referenceIntervals}
-                            scoreLabel={isPromisDomain ? `T-Score: ${domain.tScore}` : `Score: ${domain.rawScore}`}
+                            scoreLabel={`Score: ${domain.score.toFixed(1)}`}
                             minScale={isPromisDomain ? 30 : undefined} 
                             maxScale={isPromisDomain ? 85 : undefined} 
                         />

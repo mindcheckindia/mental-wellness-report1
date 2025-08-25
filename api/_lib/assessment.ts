@@ -93,7 +93,8 @@ interface QuestionConfig {
 }
 
 interface DomainConfig {
-  name: string;
+  name: string; // User-friendly name for internal mapping
+  reportName: string; // Clinical name for the final report
   about: string;
   aboutLink: string;
   questionIds: QuestionConfig[];
@@ -115,6 +116,7 @@ const LEVEL_2_THRESHOLD = 2; // "Mild" or greater ("A few times")
 const domainConfigs: DomainConfig[] = [
     { 
         name: 'Your Mood & Interest',
+        reportName: 'Depression',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
         tScoreType: 'DEPRESSION',
@@ -140,6 +142,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Feelings of Frustration',
+        reportName: 'Anger',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
         tScoreType: 'ANGER',
@@ -164,6 +167,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Your Energy & Drive',
+        reportName: 'Mania',
         scoringMethod: 'SUM',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -186,6 +190,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Feelings of Worry',
+        reportName: 'Anxiety',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
         tScoreType: 'ANXIETY',
@@ -211,6 +216,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Body & Mind Connection',
+        reportName: 'Somatic Symptoms',
         scoringMethod: 'SUM',
         answerMapping: 'PHQ15',
         tScoreType: 'NONE',
@@ -238,6 +244,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Thoughts of Self-Harm',
+        reportName: 'Suicide Ideation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -256,6 +263,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Your Perceptions',
+        reportName: 'Psychosis',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -274,6 +282,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Your Sleep Quality',
+        reportName: 'Sleep Disturbance',
         scoringMethod: 'SUM',
         answerMapping: 'PROMIS',
         tScoreType: 'SLEEP',
@@ -298,6 +307,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Your Focus & Memory',
+        reportName: 'Cognition',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -315,6 +325,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Repetitive Patterns',
+        reportName: 'Obsessions & Compulsions',
         scoringMethod: 'AVERAGE',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -339,6 +350,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Feeling Grounded',
+        reportName: 'Dissociation',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -356,6 +368,7 @@ const domainConfigs: DomainConfig[] = [
     },
     { 
         name: 'Self & Relationships',
+        reportName: 'Personality Functioning',
         scoringMethod: 'MAX_THRESHOLD',
         answerMapping: 'DEFAULT',
         tScoreType: 'NONE',
@@ -493,7 +506,7 @@ export function generateReportFromSubmission(submission: AssessmentSubmission): 
         const interpretation = getInterpretation(finalScore, config.referenceIntervals);
 
         return {
-            name: config.name,
+            name: config.reportName,
             about: config.about,
             aboutLink: config.aboutLink,
             score: finalScore,

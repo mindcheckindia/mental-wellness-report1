@@ -9,7 +9,6 @@ import IndividualInfo from './components/IndividualInfo';
 import DomainCard from './components/DomainCard';
 import GlobalResources from './components/GlobalResources';
 import { GeneralDisclaimer, IndividualsDisclaimer } from './components/Disclaimer';
-import DownloadButton from './components/DownloadButton';
 import AtAGlance from './components/AtAGlance';
 import VerificationSeal from './components/VerificationSeal';
 import AssessmentForm from './components/AssessmentForm';
@@ -18,11 +17,8 @@ import { BrandIcon } from './components/icons';
 import ReportActions from './components/ReportActions';
 import NextSteps from './components/NextSteps';
 
-declare const html2pdf: any;
-
 const App: React.FC = () => {
     const reportRef = useRef<HTMLDivElement>(null);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [reportData, setReportData] = useState<IndividualData | null>(null);
     const [loadingState, setLoadingState] = useState<{ isLoading: boolean; message: string; error: string | null }>({
         isLoading: true,
@@ -97,29 +93,6 @@ const App: React.FC = () => {
             });
         };
     }, [reportData]);
-
-
-    const handleDownloadPdf = useCallback(() => {
-        setIsGeneratingPdf(true);
-        const element = reportRef.current;
-        if (element) {
-            const opt = {
-                margin: 0.5,
-                filename: `Mental_Wellness_Report_${reportData?.individualId}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            if (typeof html2pdf !== 'undefined') {
-                html2pdf().set(opt).from(element).save().then(() => setIsGeneratingPdf(false));
-            } else {
-                console.error('html2pdf library is not available.');
-                setIsGeneratingPdf(false);
-            }
-        } else {
-            setIsGeneratingPdf(false);
-        }
-    }, [reportData]);
     
     if (loadingState.isLoading) {
         return (
@@ -146,7 +119,7 @@ const App: React.FC = () => {
     if (reportData) {
         return (
             <div className="min-h-screen bg-slate-100 font-inter">
-                 <ReportActions onDownload={handleDownloadPdf} isGenerating={isGeneratingPdf} />
+                 <ReportActions />
                  <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
                     <div className="max-w-7xl w-full">
                         <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
@@ -176,9 +149,6 @@ const App: React.FC = () => {
                             </div>
                         </div>
                         <div className="report-section"><NextSteps /></div>
-                        <div className="report-section">
-                            <DownloadButton onClick={handleDownloadPdf} isGenerating={isGeneratingPdf} variant="full" />
-                        </div>
                     </div>
                 </main>
             </div>
