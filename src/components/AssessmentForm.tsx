@@ -1,9 +1,11 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
 import { AnswerOption } from '../types';
 import { shuffleArray } from '../utils/helpers';
+import AnimatedBackground from './AnimatedBackground';
 
 const ProgressTracker = ({ part, progress }: { part: number, progress: number }) => {
     return (
@@ -36,12 +38,6 @@ const FormCard: React.FC<{children: React.ReactNode; className?: string}> = ({ c
     </div>
 );
 
-const videos = {
-    welcome: 'https://videos.pexels.com/video-files/4429945/4429945-hd_1920_1080_25fps.mp4',
-    details: 'https://videos.pexels.com/video-files/3752159/3752159-hd_1920_1080_25fps.mp4',
-    assessment: 'https://videos.pexels.com/video-files/1972239/1972239-hd_1920_1080_30fps.mp4',
-};
-
 const AssessmentForm: React.FC = () => {
     const [step, setStep] = useState(0); // 0:Welcome, 1:Commitment, 2:Details, 3:L1, 4:L2
     const [userDetails, setUserDetails] = useState({ firstName: '', lastName: '', email: '' });
@@ -49,7 +45,6 @@ const AssessmentForm: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [commitmentText, setCommitmentText] = useState('');
     const [shuffledOptions, setShuffledOptions] = useState<{ [key: string]: AnswerOption[] }>({});
-    const [currentVideo, setCurrentVideo] = useState(videos.welcome);
 
     useEffect(() => {
         // Pre-shuffle all question options on component mount to keep them stable
@@ -60,13 +55,6 @@ const AssessmentForm: React.FC = () => {
         }, {} as { [key: string]: AnswerOption[] });
         setShuffledOptions(shuffled);
     }, []);
-
-    useEffect(() => {
-        // Change background video based on the current step
-        if (step <= 1) setCurrentVideo(videos.welcome);
-        else if (step === 2) setCurrentVideo(videos.details);
-        else setCurrentVideo(videos.assessment);
-    }, [step]);
     
     // --- L1 and L2 Questions Logic ---
     const l1Sections = useMemo(() => assessmentSections.map(section => ({
@@ -243,9 +231,7 @@ const AssessmentForm: React.FC = () => {
     return (
         <div className="min-h-screen font-inter flex flex-col items-center justify-center p-4 relative overflow-hidden">
             <div className="fixed inset-0 w-full h-full -z-10">
-                 <video key={currentVideo} autoPlay loop muted playsInline className="w-full h-full object-cover transition-opacity duration-1000">
-                    <source src={currentVideo} type="video/mp4" />
-                </video>
+                <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/70"></div>
             </div>
             {renderContent()}
