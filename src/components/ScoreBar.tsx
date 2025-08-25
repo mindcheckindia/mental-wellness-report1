@@ -36,8 +36,9 @@ const ScoreBar: React.FC<ScoreBarProps> = ({ score, intervals, scoreLabel, minSc
             return `${color} ${startPercent}%, ${color} ${endPercent}%`;
         });
         const gradientCss = `linear-gradient(to right, ${colorStops.join(', ')})`;
-
-        const gridCols = sortedIntervals.map(interval => `${(interval.max ?? maxVal) - interval.min}fr`).join(' ');
+        
+        // Use equal widths for labels for better visual alignment and professionalism
+        const gridCols = `repeat(${sortedIntervals.length}, 1fr)`;
         
         return {
             scorePercentage: scorePerc,

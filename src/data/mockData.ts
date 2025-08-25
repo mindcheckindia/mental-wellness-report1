@@ -196,7 +196,7 @@ export const mockReportData: IndividualData = {
           { label: 'Mild', min: 1, max: 1.9, color: 'bg-yellow-500' },
           { label: 'Moderate', min: 2, max: 2.9, color: 'bg-orange-500' },
           { label: 'Severe', min: 3, max: 3.9, color: 'bg-red-500' },
-          { label: 'Extreme', min: 4, max: 4, color: 'bg-red-500' }
+          { label: 'Extreme', min: 4, max: null, color: 'bg-red-500' }
       ], 
       insightsAndSupport: "John, your results suggest a moderate level of repetitive thoughts or behaviors. These patterns can be disruptive, and it may be beneficial to explore this with a therapist who can introduce effective strategies like CBT.",
       individualsExperienced: [
