@@ -111,7 +111,8 @@ const AssessmentForm: React.FC = () => {
                     <FormCard className="text-center">
                         <BrandIcon className="h-16 w-16 mx-auto text-sky-400 mb-6" />
                         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 font-lora">Welcome to Your Mental Well-Being Assessment</h1>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This assessment evaluates your responses across 12 key domains based on DSM-5-TR guidelines—the gold standard in mental health.</p>
+                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This isn't just another generic test. It's a scientifically-designed, dynamic assessment that adapts in real-time to your unique well-being needs.</p>
+                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">The process is simple: Part 1 is a brief check-in. Your confidential responses here will intelligently shape Part 2, tailoring the deeper-dive questions to focus only on what's most relevant to you. This adaptive method, based on established clinical frameworks, allows for a more precise and accurate picture of your well-being and leads to truly personalized insights.</p>
                         <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-8">Your privacy is our top priority. All data you provide is <strong className="text-sky-300">encrypted</strong> and handled with the highest privacy standards to ensure your information remains secure and confidential.</p>
                         <button onClick={() => setStep(1)} className="px-12 py-4 bg-sky-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-sky-600 transition-all duration-300 transform hover:scale-105">
                             Get Started
