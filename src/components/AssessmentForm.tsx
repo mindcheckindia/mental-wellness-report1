@@ -219,13 +219,6 @@ const AssessmentForm: React.FC = () => {
                 const progress = isL1 
                     ? (l1Questions.length > 0 ? (l1Answered / l1Questions.length) * 100 : 100)
                     : (l2Questions.length > 0 ? (l2Answered / l2Questions.length) * 100 : 0);
-                
-                const recommendedMinutes = useMemo(() => {
-                    const SECONDS_PER_QUESTION = 15;
-                    const part1Mins = Math.ceil((l1Questions.length * SECONDS_PER_QUESTION) / 60);
-                    const part2Mins = l2Questions.length > 0 ? Math.ceil((l2Questions.length * SECONDS_PER_QUESTION) / 60) : 0;
-                    return part === 1 ? part1Mins : part2Mins;
-                }, [part, l1Questions.length, l2Questions.length]);
 
                 const isLastQuestion = questionIndex === questionQueue.length - 1;
                 const isNextDisabled = answers[currentQuestion.id] === undefined;
