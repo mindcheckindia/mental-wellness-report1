@@ -31,7 +31,7 @@ const responseSchema = {
  * @param domain - The domain object containing name, score, intervals, and interpretation.
  * @returns A string explaining the score's meaning.
  */
-function getDomainScoringContext(domain: { name: string, score: number | null, referenceIntervals: ReferenceInterval[], userInterpretation: string }): string {
+function getDomainScoringContext(domain: Domain): string {
     const score = domain.score;
     if (score === null) {
         return "The user did not complete enough questions for a score to be calculated for this domain.";
@@ -89,7 +89,7 @@ export default async function handler(
             name: d.name, 
             interpretation: d.userInterpretation, 
             score: d.score,
-            scoringContext: getDomainScoringContext({ name: d.name, score: d.score, referenceIntervals: d.referenceIntervals, userInterpretation: d.userInterpretation })
+            scoringContext: getDomainScoringContext(d)
         })), null, 2)}
 
         For each domain, generate a personalized "Insights & Support" message. Your response MUST be a JSON object matching the provided schema. The 'insights' array must have the same number of elements as the input domains.
