@@ -254,7 +254,7 @@ const domainConfigs: DomainConfig[] = [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
         ],
-        about: 'This is a safety check for thoughts of self-harm. A response of "Slight" or greater indicates a need for further inquiry and support.',
+        about: 'This is a safety check for thoughts of self-harm. Any reported thoughts of self-harm (an answer other than "Not at all") indicates a need for further inquiry and support.',
         aboutLink: 'https://988lifeline.org/',
         individualsExperienced: [
             { name: 'J.K. Rowling', link: 'https://www.cbsnews.com/news/potter-creator-once-contemplated-suicide/' },
@@ -273,7 +273,7 @@ const domainConfigs: DomainConfig[] = [
             { label: 'Within normal limits', min: 0, max: 0, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 1, max: null, color: 'bg-red-500' }
         ],
-        about: 'This section identifies unusual thoughts or perceptions that might differ from those of others. A response of "Slight" or greater suggests a need for further conversation.',
+        about: 'This section identifies unusual thoughts or perceptions that might differ from those of others. If you experienced these even once or twice, it suggests a need for further conversation.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/schizophrenia/raise/what-is-psychosis',
         individualsExperienced: [
             { name: 'John Nash', link: 'https://livingwithschizophreniauk.org/john-nash/' },
@@ -317,7 +317,7 @@ const domainConfigs: DomainConfig[] = [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
-        about: 'This assesses challenges with memory or concentration. A response of "Mild" or greater suggests it may be helpful to look into this further.',
+        about: 'This assesses challenges with memory or concentration. If you experience these problems more than just once or twice, it may be helpful to look into this further.',
         aboutLink: 'https://www.nia.nih.gov/health/memory-forgetfulness-and-aging-whats-normal-and-whats-not',
         individualsExperienced: [
             { name: 'Ronald Reagan', link: 'https://optoceutics.com/famous-people-celebrities-singers-with-alzheimers/' },
@@ -360,7 +360,7 @@ const domainConfigs: DomainConfig[] = [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
-        about: 'This explores experiences of feeling detached from yourself, your body, or your surroundings. A response of "Mild" or greater suggests a need for further discussion.',
+        about: 'This explores experiences of feeling detached from yourself, your body, or your surroundings. If these moments occur more than just once or twice, it suggests a need for further discussion.',
         aboutLink: 'https://www.nami.org/About-Mental-Illness/Mental-Health-Conditions/Dissociative-Disorders',
         individualsExperienced: [
             { name: 'Jim Carrey', link: 'https://psychprofessionals.com.au/jim-carrey-on-overcoming-depression/' },
@@ -378,7 +378,7 @@ const domainConfigs: DomainConfig[] = [
             { label: 'Within normal limits', min: 0, max: 1, color: 'bg-green-500' },
             { label: 'Further inquiry indicated', min: 2, max: null, color: 'bg-red-500' }
         ],
-        about: 'This area examines long-term patterns in how you see yourself and connect with others. A response of "Mild" or greater suggests it may be beneficial to explore further.',
+        about: 'This area examines long-term patterns in how you see yourself and connect with others. If these feelings occur more than once or twice, it may be beneficial to explore them further.',
         aboutLink: 'https://www.nimh.nih.gov/health/topics/borderline-personality-disorder',
         individualsExperienced: [
             { name: 'Pete Davidson', link: 'https://en.wikipedia.org/wiki/Pete_Davidson#Health' },
