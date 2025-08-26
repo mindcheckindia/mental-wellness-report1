@@ -1,6 +1,6 @@
 
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
 import { AnswerOption, Question } from '../types';
@@ -47,7 +47,9 @@ const Timer: React.FC<{
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+            if (startTime) {
+                setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+            }
         }, 1000);
         return () => clearInterval(timer);
     }, [startTime]);
@@ -58,18 +60,19 @@ const Timer: React.FC<{
     const questionsInPart = part === 1 ? part1Total : part2Total;
     const recommendedSeconds = questionsInPart * 15;
     const recommendedMinutes = Math.ceil(recommendedSeconds / 60);
-    const partText = part === 1 ? 'Part 1' : 'Part 2';
 
     const recommendationText = questionsInPart > 0
-        ? `${partText} Recommended: ~${recommendedMinutes} min | `
-        : '';
+        ? `Recommended time for this section: ~${recommendedMinutes} min`
+        : 'Recommended time for this section: N/A';
+        
+    const timeTakenText = `Time you have taken: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
     return (
         <div className="absolute top-4 right-4 text-xs font-semibold text-sky-200 text-center">
             <div className="bg-slate-900/50 px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
-                {recommendationText}Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                {recommendationText} | {timeTakenText}
             </div>
-            {questionsInPart > 0 && <p className="text-white/80 mt-1 text-[11px]">We recommend spending about 15 seconds per question.</p>}
+             {questionsInPart > 0 && <p className="text-white/80 mt-1 text-[11px]">We recommend spending about 15 seconds per question.</p>}
         </div>
     );
 };
@@ -88,7 +91,7 @@ const AssessmentForm: React.FC = () => {
     const [commitmentText, setCommitmentText] = useState('');
     const [shuffledOptions, setShuffledOptions] = useState<{ [key: string]: AnswerOption[] }>({});
     const [questionIndex, setQuestionIndex] = useState(0);
-    const [startTime, setStartTime] = useState<number | null>(null);
+    const [partStartTime, setPartStartTime] = useState<number | null>(null);
 
     useEffect(() => {
         const allQuestions = assessmentSections.flatMap(s => s.questions);
@@ -164,12 +167,21 @@ const AssessmentForm: React.FC = () => {
     };
 
     const startAssessment = () => {
-        setStartTime(Date.now());
+        setPartStartTime(Date.now());
         setStep(3);
     }
     
     const isL1 = questionIndex < l1Questions.length;
     const part = isL1 ? 1 : 2;
+    const prevPartRef = useRef(part);
+
+    useEffect(() => {
+        // When part changes from 1 to 2, reset the start time.
+        if (prevPartRef.current === 1 && part === 2) {
+            setPartStartTime(Date.now());
+        }
+        prevPartRef.current = part;
+    }, [part]);
 
     const renderContent = () => {
         switch (step) {
@@ -280,9 +292,16 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
-             {step === 3 && startTime && (
+             {step === 3 && (
+                <div className="absolute top-4 left-4 text-xs font-semibold text-amber-200 text-center">
+                    <div className="bg-slate-900/50 px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+                        Prototype: Do not share without permission
+                    </div>
+                </div>
+            )}
+             {step === 3 && partStartTime && (
                  <Timer 
-                    startTime={startTime} 
+                    startTime={partStartTime} 
                     part={part}
                     part1Total={l1Questions.length}
                     part2Total={l2Questions.length}
