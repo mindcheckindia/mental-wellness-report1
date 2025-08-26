@@ -16,8 +16,8 @@ const GeneralDisclaimer: React.FC = () => (
 
 const IndividualsDisclaimer: React.FC = () => (
     <div className="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200 text-slate-600 text-sm italic">
-        <p className="font-semibold mb-1">Note on "Notable Figures":</p>
-        <p>The individuals listed are public figures who have openly discussed their experiences or are widely associated with them based on public information. This is for general awareness and to show that these experiences are common. It is not a comprehensive list, and mental health journeys are unique to each individual.</p>
+        <p className="font-semibold mb-1">Note on "Notable Figures' Experiences":</p>
+        <p>The individuals listed are public figures who have openly discussed their experiences or are widely associated with the respective domains based on public information. This is for general awareness and to show that these experiences are common. It is not a comprehensive list, and mental health journeys are unique to each individual.</p>
     </div>
 );
 

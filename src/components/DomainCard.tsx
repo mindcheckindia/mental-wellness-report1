@@ -111,7 +111,7 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                     </AccordionSection>
                     
                      <AccordionSection 
-                        title="Notable Figures"
+                        title="Notable Figures' Experiences"
                         icon={<UsersIcon className="h-6 w-6 text-teal-500" />}
                         isOpen={isFiguresOpen}
                         onToggle={() => setFiguresOpen(!isFiguresOpen)}

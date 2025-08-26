@@ -162,8 +162,7 @@ const AssessmentForm: React.FC = () => {
                 return(
                     <FormCard>
                         <ProgressTracker part={1} progress={l1Progress} />
-                        <h1 className="text-3xl font-bold text-white mb-6 font-lora">Part 1: Quick Check-in</h1>
-                        <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4">
+                        <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4 pt-6">
                             {l1Sections.map(section => (
                                 <div key={section.title}>
                                     <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
