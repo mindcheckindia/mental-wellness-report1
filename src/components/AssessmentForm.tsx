@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
@@ -36,7 +37,7 @@ const ProgressTracker = ({ part, progress, part1Total, part2Total, part1Answered
     );
 };
 
-const Timer: React.FC<{ startTime: number; part: number; recommendedMinutes: number }> = ({ startTime, part, recommendedMinutes }) => {
+const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
     useEffect(() => {
@@ -50,11 +51,8 @@ const Timer: React.FC<{ startTime: number; part: number; recommendedMinutes: num
     const seconds = elapsedSeconds % 60;
 
     return (
-        <div className="absolute top-4 right-4 text-right">
-            <div className="bg-slate-900/50 text-sky-200 text-xs font-semibold px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
-                Part {part} Rec: ~{recommendedMinutes} min | Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-            </div>
-            <p className="text-white/80 text-[11px] mt-1 px-2">We recommend spending about 15 seconds per question.</p>
+        <div className="absolute top-4 right-4 bg-slate-900/50 text-sky-200 text-xs font-semibold px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+            Recommended: ~15 mins | Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
         </div>
     );
 };
@@ -94,9 +92,9 @@ const AssessmentForm: React.FC = () => {
 
     const l2Questions = useMemo<QuestionWithContext[]>(() => {
         const LEVEL_2_THRESHOLD = 2;
-        // L2 questions are now determined dynamically as answers are given,
-        // without waiting for all of Part 1 to be complete. This prevents
-        // the question queue from being prematurely empty and causing a crash.
+        const isL1Complete = l1Questions.every(q => answers[q.id] !== undefined);
+        if (!isL1Complete) return [];
+
         return assessmentSections.flatMap(section => 
             section.questions
                 .filter(q => {
@@ -105,7 +103,7 @@ const AssessmentForm: React.FC = () => {
                 })
                 .map(q => ({ ...q, sectionTitle: section.title, timeframe: section.timeframeL2 || section.timeframe }))
         );
-    }, [answers]);
+    }, [answers, l1Questions]);
 
     const questionQueue = useMemo(() => [...l1Questions, ...l2Questions], [l1Questions, l2Questions]);
 
@@ -118,7 +116,6 @@ const AssessmentForm: React.FC = () => {
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if (isSubmitting) return; // Prevent double submission
         setIsSubmitting(true);
         const submissionData = { ...userDetails, answers };
         try {
@@ -135,20 +132,6 @@ const AssessmentForm: React.FC = () => {
             setIsSubmitting(false);
         }
     };
-    
-    useEffect(() => {
-        // This handles cases where L2 questions are not triggered and the form
-        // should submit automatically after the last L1 question is answered.
-        const isAssessmentActive = step === 3;
-        if (!isAssessmentActive || l1Questions.length === 0) return;
-
-        const allL1Answered = l1Questions.every(q => answers[q.id] !== undefined);
-        const noL2Triggered = l2Questions.length === 0;
-
-        if (allL1Answered && noL2Triggered && !isSubmitting) {
-            handleSubmit();
-        }
-    }, [answers, l1Questions, l2Questions, isSubmitting, step]);
 
     const handleNext = () => {
         if (questionIndex < questionQueue.length - 1) {
@@ -220,21 +203,22 @@ const AssessmentForm: React.FC = () => {
                 );
 
             case 3: // Assessment Question View
-                if (!questionQueue[questionIndex]) {
-                     // This prevents a crash if the question isn't ready for a render cycle.
-                     // The useEffect hook will handle submission if the assessment is truly over.
-                     return <div className="text-white text-xl">{isSubmitting ? 'Calculating your report...' : 'Loading...'}</div>;
+                if (questionQueue.length === 0) {
+                     handleSubmit(); // Submit if no questions are queued (e.g., L2 not triggered)
+                     return <div className="text-white text-xl">Calculating your report...</div>;
                 }
                 const currentQuestion = questionQueue[questionIndex];
-                
+                const prevQuestion = questionIndex > 0 ? questionQueue[questionIndex - 1] : null;
+                const isNewSection = !prevQuestion || prevQuestion.sectionTitle !== currentQuestion.sectionTitle;
+
                 const isL1 = questionIndex < l1Questions.length;
                 const part = isL1 ? 1 : 2;
                 const l1Answered = l1Questions.filter(q => answers[q.id] !== undefined).length;
                 const l2Answered = l2Questions.filter(q => answers[q.id] !== undefined).length;
                 const progress = isL1 
-                    ? (l1Questions.length > 0 ? (l1Answered / l1Questions.length) * 100 : 100)
+                    ? (l1Answered / l1Questions.length) * 100
                     : (l2Questions.length > 0 ? (l2Answered / l2Questions.length) * 100 : 0);
-
+                
                 const isLastQuestion = questionIndex === questionQueue.length - 1;
                 const isNextDisabled = answers[currentQuestion.id] === undefined;
 
@@ -243,10 +227,12 @@ const AssessmentForm: React.FC = () => {
                          <ProgressTracker part={part} progress={progress} part1Total={l1Questions.length} part2Total={l2Questions.length} part1Answered={l1Answered} part2Answered={l2Answered} />
 
                         <div className="min-h-[20rem] flex flex-col">
-                            <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
-                                <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
-                                <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
-                            </div>
+                            {isNewSection && (
+                                <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
+                                    <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
+                                    <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
+                                </div>
+                            )}
 
                             <fieldset key={currentQuestion.id} className="flex-grow">
                                 <legend className="text-lg font-medium text-white whitespace-pre-wrap mb-4">{currentQuestion.text}</legend>
@@ -280,19 +266,7 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
-             {step === 3 && startTime && (
-                <Timer 
-                    startTime={startTime} 
-                    part={useMemo(() => (questionIndex < l1Questions.length ? 1 : 2), [questionIndex, l1Questions.length])}
-                    recommendedMinutes={useMemo(() => {
-                        const SECONDS_PER_QUESTION = 15;
-                        const part = questionIndex < l1Questions.length ? 1 : 2;
-                        const part1Mins = Math.max(1, Math.ceil((l1Questions.length * SECONDS_PER_QUESTION) / 60));
-                        const part2Mins = l2Questions.length > 0 ? Math.max(1, Math.ceil((l2Questions.length * SECONDS_PER_QUESTION) / 60)) : 0;
-                        return part === 1 ? part1Mins : part2Mins;
-                    }, [questionIndex, l1Questions.length, l2Questions.length])} 
-                />
-            )}
+             {step === 3 && startTime && <Timer startTime={startTime} />}
             {renderContent()}
         </div>
     );
