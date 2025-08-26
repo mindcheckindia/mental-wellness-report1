@@ -37,7 +37,7 @@ const ProgressTracker = ({ part, progress, part1Total, part2Total, part1Answered
     );
 };
 
-const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
+const Timer: React.FC<{ startTime: number; part: number; recommendedMinutes: number }> = ({ startTime, part, recommendedMinutes }) => {
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
     useEffect(() => {
@@ -51,8 +51,11 @@ const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
     const seconds = elapsedSeconds % 60;
 
     return (
-        <div className="absolute top-4 right-4 bg-slate-900/50 text-sky-200 text-xs font-semibold px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
-            Recommended: ~15 mins | Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+        <div className="absolute top-4 right-4 text-right">
+            <div className="bg-slate-900/50 text-sky-200 text-xs font-semibold px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+                Part {part} Rec: ~{recommendedMinutes} min | Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </div>
+            <p className="text-white/80 text-[11px] mt-1 px-2">We recommend spending about 15 seconds per question.</p>
         </div>
     );
 };
@@ -208,17 +211,22 @@ const AssessmentForm: React.FC = () => {
                      return <div className="text-white text-xl">Calculating your report...</div>;
                 }
                 const currentQuestion = questionQueue[questionIndex];
-                const prevQuestion = questionIndex > 0 ? questionQueue[questionIndex - 1] : null;
-                const isNewSection = !prevQuestion || prevQuestion.sectionTitle !== currentQuestion.sectionTitle;
-
+                
                 const isL1 = questionIndex < l1Questions.length;
                 const part = isL1 ? 1 : 2;
                 const l1Answered = l1Questions.filter(q => answers[q.id] !== undefined).length;
                 const l2Answered = l2Questions.filter(q => answers[q.id] !== undefined).length;
                 const progress = isL1 
-                    ? (l1Answered / l1Questions.length) * 100
+                    ? (l1Questions.length > 0 ? (l1Answered / l1Questions.length) * 100 : 100)
                     : (l2Questions.length > 0 ? (l2Answered / l2Questions.length) * 100 : 0);
                 
+                const recommendedMinutes = useMemo(() => {
+                    const SECONDS_PER_QUESTION = 15;
+                    const part1Mins = Math.ceil((l1Questions.length * SECONDS_PER_QUESTION) / 60);
+                    const part2Mins = l2Questions.length > 0 ? Math.ceil((l2Questions.length * SECONDS_PER_QUESTION) / 60) : 0;
+                    return part === 1 ? part1Mins : part2Mins;
+                }, [part, l1Questions.length, l2Questions.length]);
+
                 const isLastQuestion = questionIndex === questionQueue.length - 1;
                 const isNextDisabled = answers[currentQuestion.id] === undefined;
 
@@ -227,12 +235,10 @@ const AssessmentForm: React.FC = () => {
                          <ProgressTracker part={part} progress={progress} part1Total={l1Questions.length} part2Total={l2Questions.length} part1Answered={l1Answered} part2Answered={l2Answered} />
 
                         <div className="min-h-[20rem] flex flex-col">
-                            {isNewSection && (
-                                <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
-                                    <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
-                                    <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
-                                </div>
-                            )}
+                            <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
+                                <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
+                                <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
+                            </div>
 
                             <fieldset key={currentQuestion.id} className="flex-grow">
                                 <legend className="text-lg font-medium text-white whitespace-pre-wrap mb-4">{currentQuestion.text}</legend>
@@ -266,7 +272,19 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
-             {step === 3 && startTime && <Timer startTime={startTime} />}
+             {step === 3 && startTime && (
+                <Timer 
+                    startTime={startTime} 
+                    part={useMemo(() => (questionIndex < l1Questions.length ? 1 : 2), [questionIndex, l1Questions.length])}
+                    recommendedMinutes={useMemo(() => {
+                        const SECONDS_PER_QUESTION = 15;
+                        const part = questionIndex < l1Questions.length ? 1 : 2;
+                        const part1Mins = Math.max(1, Math.ceil((l1Questions.length * SECONDS_PER_QUESTION) / 60));
+                        const part2Mins = l2Questions.length > 0 ? Math.max(1, Math.ceil((l2Questions.length * SECONDS_PER_QUESTION) / 60)) : 0;
+                        return part === 1 ? part1Mins : part2Mins;
+                    }, [questionIndex, l1Questions.length, l2Questions.length])} 
+                />
+            )}
             {renderContent()}
         </div>
     );
