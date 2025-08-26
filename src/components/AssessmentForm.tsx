@@ -3,19 +3,24 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
-import { AnswerOption } from '../types';
+import { AnswerOption, Question } from '../types';
 import { shuffleArray } from '../utils/helpers';
 import AnimatedBackground from './AnimatedBackground';
 
-const ProgressTracker = ({ part, progress }: { part: number, progress: number }) => {
+type QuestionWithContext = Question & {
+    sectionTitle: string;
+    timeframe: string;
+};
+
+const ProgressTracker = ({ part, progress, part1Total, part2Total, part1Answered, part2Answered }: { part: number; progress: number; part1Total: number; part2Total: number; part1Answered: number; part2Answered: number; }) => {
     return (
-        <div className="w-full mb-8 text-white">
-             <div className="grid grid-cols-2 gap-4 text-center mb-2">
+        <div className="w-full mb-4 text-white">
+             <div className="grid grid-cols-2 gap-4 text-center mb-2 text-sm">
                 <div className={part === 1 ? 'font-bold' : 'opacity-70'}>
-                    Part 1: Quick Check-in
+                    Part 1: Quick Check-in <span className="font-normal opacity-80">({part1Answered}/{part1Total})</span>
                 </div>
                 <div className={part === 2 ? 'font-bold' : 'opacity-70'}>
-                    Part 2: Deeper Dive
+                    Part 2: Deeper Dive <span className="font-normal opacity-80">({part2Answered}/{part2Total})</span>
                 </div>
             </div>
             <div className="flex bg-white/20 rounded-full h-2.5">
@@ -32,22 +37,43 @@ const ProgressTracker = ({ part, progress }: { part: number, progress: number })
     );
 };
 
+const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [startTime]);
+
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+
+    return (
+        <div className="absolute top-4 right-4 bg-slate-900/50 text-sky-200 text-xs font-semibold px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+            Recommended: ~15 mins | Time: {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+        </div>
+    );
+};
+
 const FormCard: React.FC<{children: React.ReactNode; className?: string}> = ({ children, className }) => (
-    <div className={`w-full max-w-4xl bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 sm:p-12 shadow-2xl border border-white/20 ${className}`}>
+    <div className={`w-full max-w-2xl bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 sm:p-10 shadow-2xl border border-white/20 ${className}`}>
         {children}
     </div>
 );
 
 const AssessmentForm: React.FC = () => {
-    const [step, setStep] = useState(0); // 0:Welcome, 1:Commitment, 2:Details, 3:L1, 4:L2
+    const [step, setStep] = useState(0); // 0:Welcome, 1:Commitment, 2:Details, 3:Assessment
     const [userDetails, setUserDetails] = useState({ firstName: '', lastName: '', email: '' });
     const [answers, setAnswers] = useState<{ [key: string]: number }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [commitmentText, setCommitmentText] = useState('');
     const [shuffledOptions, setShuffledOptions] = useState<{ [key: string]: AnswerOption[] }>({});
+    const [questionIndex, setQuestionIndex] = useState(0);
+    const [startTime, setStartTime] = useState<number | null>(null);
 
     useEffect(() => {
-        // Pre-shuffle all question options on component mount to keep them stable
         const allQuestions = assessmentSections.flatMap(s => s.questions);
         const shuffled = allQuestions.reduce((acc, q) => {
             acc[q.id] = shuffleArray([...q.answerOptions]);
@@ -56,33 +82,40 @@ const AssessmentForm: React.FC = () => {
         setShuffledOptions(shuffled);
     }, []);
     
-    // --- L1 and L2 Questions Logic ---
-    const l1Sections = useMemo(() => assessmentSections.map(section => ({
-        ...section,
-        questions: section.questions.filter(q => q.id.includes('_l1_'))
-    })).filter(section => section.questions.length > 0), []);
+    const l1Questions = useMemo<QuestionWithContext[]>(() => {
+        return assessmentSections.flatMap(section => 
+            section.questions
+                .filter(q => q.id.includes('_l1_'))
+                .map(q => ({ ...q, sectionTitle: section.title, timeframe: section.timeframe }))
+        );
+    }, []);
 
-    const visibleL2Sections = useMemo(() => {
+    const l2Questions = useMemo<QuestionWithContext[]>(() => {
         const LEVEL_2_THRESHOLD = 2;
-        return assessmentSections.map(section => ({
-            ...section,
-            questions: section.questions.filter(q => {
-                if (!q.id.includes('_l2_') || !q.condition) return false;
-                return q.condition.triggerIds.some(id => (answers[id] ?? 0) >= LEVEL_2_THRESHOLD);
-            })
-        })).filter(section => section.questions.length > 0);
-    }, [answers]);
+        const isL1Complete = l1Questions.every(q => answers[q.id] !== undefined);
+        if (!isL1Complete) return [];
 
-    // --- Handlers ---
+        return assessmentSections.flatMap(section => 
+            section.questions
+                .filter(q => {
+                    if (!q.id.includes('_l2_') || !q.condition) return false;
+                    return q.condition.triggerIds.some(id => (answers[id] ?? 0) >= LEVEL_2_THRESHOLD);
+                })
+                .map(q => ({ ...q, sectionTitle: section.title, timeframe: section.timeframeL2 || section.timeframe }))
+        );
+    }, [answers, l1Questions]);
+
+    const questionQueue = useMemo(() => [...l1Questions, ...l2Questions], [l1Questions, l2Questions]);
+
     const handleUserDetailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
     };
     const handleAnswerChange = (questionId: string, value: number) => {
-        setAnswers({ ...answers, [questionId]: value });
+        setAnswers(prev => ({ ...prev, [questionId]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault();
         setIsSubmitting(true);
         const submissionData = { ...userDetails, answers };
         try {
@@ -99,16 +132,30 @@ const AssessmentForm: React.FC = () => {
             setIsSubmitting(false);
         }
     };
-    
-    const isL1Complete = () => l1Sections.flatMap(s => s.questions).every(q => answers[q.id] !== undefined);
 
-    const isL2Complete = () => visibleL2Sections.flatMap(s => s.questions).every(q => answers[q.id] !== undefined);
+    const handleNext = () => {
+        if (questionIndex < questionQueue.length - 1) {
+            setQuestionIndex(prev => prev + 1);
+        } else {
+            handleSubmit();
+        }
+    };
+    const handlePrevious = () => {
+        if (questionIndex > 0) {
+            setQuestionIndex(prev => prev - 1);
+        }
+    };
+
+    const startAssessment = () => {
+        setStartTime(Date.now());
+        setStep(3);
+    }
 
     const renderContent = () => {
         switch (step) {
             case 0: // Welcome
                 return (
-                    <FormCard className="text-center">
+                    <FormCard className="text-center max-w-4xl">
                         <BrandIcon className="h-16 w-16 mx-auto text-sky-400 mb-6" />
                         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
                             Mindcheck<sup className="text-lg sm:text-2xl font-medium">&reg;</sup> Personalized Mental Wellness Blueprint
@@ -144,7 +191,7 @@ const AssessmentForm: React.FC = () => {
                     <FormCard>
                         <h1 className="text-3xl font-bold text-white mb-2 font-lora">Tell Us About Yourself</h1>
                         <p className="text-slate-300 mb-8">This information is used to personalize your final report.</p>
-                        <form onSubmit={e => { e.preventDefault(); setStep(3); }} className="space-y-4">
+                        <form onSubmit={e => { e.preventDefault(); startAssessment(); }} className="space-y-4">
                             <input type="text" name="firstName" placeholder="First Name (Required)" value={userDetails.firstName} onChange={handleUserDetailChange} required className="w-full px-5 py-3 text-lg bg-slate-900/50 border-2 border-slate-500 text-white rounded-lg focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition"/>
                             <input type="text" name="lastName" placeholder="Last Name" value={userDetails.lastName} onChange={handleUserDetailChange} className="w-full px-5 py-3 text-lg bg-slate-900/50 border-2 border-slate-500 text-white rounded-lg focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition"/>
                             <input type="email" name="email" placeholder="Email (Required)" value={userDetails.email} onChange={handleUserDetailChange} required className="w-full px-5 py-3 text-lg bg-slate-900/50 border-2 border-slate-500 text-white rounded-lg focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition"/>
@@ -154,80 +201,61 @@ const AssessmentForm: React.FC = () => {
                         </form>
                     </FormCard>
                 );
-            
-            case 3: // Level 1 Questions
-                const answeredL1Count = Object.keys(answers).filter(key => l1Sections.flatMap(s => s.questions).some(q => q.id === key)).length;
-                const totalL1Count = l1Sections.reduce((acc, s) => acc + s.questions.length, 0);
-                const l1Progress = totalL1Count > 0 ? (answeredL1Count / totalL1Count) * 100 : 0;
-                return(
+
+            case 3: // Assessment Question View
+                if (questionQueue.length === 0) {
+                     handleSubmit(); // Submit if no questions are queued (e.g., L2 not triggered)
+                     return <div className="text-white text-xl">Calculating your report...</div>;
+                }
+                const currentQuestion = questionQueue[questionIndex];
+                const prevQuestion = questionIndex > 0 ? questionQueue[questionIndex - 1] : null;
+                const isNewSection = !prevQuestion || prevQuestion.sectionTitle !== currentQuestion.sectionTitle;
+
+                const isL1 = questionIndex < l1Questions.length;
+                const part = isL1 ? 1 : 2;
+                const l1Answered = l1Questions.filter(q => answers[q.id] !== undefined).length;
+                const l2Answered = l2Questions.filter(q => answers[q.id] !== undefined).length;
+                const progress = isL1 
+                    ? (l1Answered / l1Questions.length) * 100
+                    : (l2Questions.length > 0 ? (l2Answered / l2Questions.length) * 100 : 0);
+                
+                const isLastQuestion = questionIndex === questionQueue.length - 1;
+                const isNextDisabled = answers[currentQuestion.id] === undefined;
+
+                return (
                     <FormCard>
-                        <ProgressTracker part={1} progress={l1Progress} />
-                        <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4 pt-6">
-                            {l1Sections.map(section => (
-                                <div key={section.title}>
-                                    <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
-                                    <p className="inline-block bg-sky-900/70 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6 shadow-sm border border-sky-700/50">{section.timeframe}</p>
-                                    {section.questions.map(q => (
-                                         <fieldset key={q.id} className="mb-8">
-                                            <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
-                                            <div className="mt-4 space-y-3">
-                                                {(shuffledOptions[q.id] || q.answerOptions).map(opt => (
-                                                    <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
-                                                        <input type="radio" name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={() => handleAnswerChange(q.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
-                                                        <span className={`ml-4 text-base ${answers[q.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </fieldset>
+                         <ProgressTracker part={part} progress={progress} part1Total={l1Questions.length} part2Total={l2Questions.length} part1Answered={l1Answered} part2Answered={l2Answered} />
+
+                        <div className="min-h-[20rem] flex flex-col">
+                            {isNewSection && (
+                                <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
+                                    <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
+                                    <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
+                                </div>
+                            )}
+
+                            <fieldset key={currentQuestion.id} className="flex-grow">
+                                <legend className="text-lg font-medium text-white whitespace-pre-wrap mb-4">{currentQuestion.text}</legend>
+                                <div className="space-y-3">
+                                    {(shuffledOptions[currentQuestion.id] || currentQuestion.answerOptions).map(opt => (
+                                        <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[currentQuestion.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
+                                            <input type="radio" name={currentQuestion.id} value={opt.value} checked={answers[currentQuestion.id] === opt.value} onChange={() => handleAnswerChange(currentQuestion.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
+                                            <span className={`ml-4 text-base ${answers[currentQuestion.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
+                                        </label>
                                     ))}
                                 </div>
-                            ))}
+                            </fieldset>
                         </div>
-                         <button onClick={() => setStep(4)} disabled={!isL1Complete()} className="w-full mt-8 px-8 py-4 bg-sky-500 text-white font-bold text-lg rounded-lg shadow-lg hover:bg-sky-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {visibleL2Sections.length > 0 ? 'Continue to Deeper Dive' : 'Calculate My Report'}
-                         </button>
-                    </FormCard>
-                );
 
-            case 4: // Level 2 Questions
-                 if (visibleL2Sections.length === 0) {
-                    // No L2 questions, so we just submit.
-                    handleSubmit(new Event('submit') as any);
-                    return <div className="text-white text-xl">Calculating your report...</div>;
-                 }
-                const answeredL2Count = Object.keys(answers).filter(key => visibleL2Sections.flatMap(s => s.questions).some(q => q.id === key)).length;
-                const totalL2Count = visibleL2Sections.reduce((acc, s) => acc + s.questions.length, 0);
-                const l2Progress = totalL2Count > 0 ? (answeredL2Count / totalL2Count) * 100 : 0;
-                 return(
-                     <form onSubmit={handleSubmit}>
-                        <FormCard>
-                            <ProgressTracker part={2} progress={l2Progress} />
-                            <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 -mr-4 pt-6">
-                                {visibleL2Sections.map(section => (
-                                    <div key={section.title}>
-                                        <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
-                                        <p className="inline-block bg-sky-900/70 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6 shadow-sm border border-sky-700/50">{section.timeframeL2 || section.timeframe}</p>
-                                        {section.questions.map(q => (
-                                             <fieldset key={q.id} className="mb-8">
-                                                <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
-                                                <div className="mt-4 space-y-3">
-                                                    {(shuffledOptions[q.id] || q.answerOptions).map(opt => (
-                                                        <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[q.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
-                                                            <input type="radio" name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={() => handleAnswerChange(q.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
-                                                            <span className={`ml-4 text-base ${answers[q.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </fieldset>
-                                        ))}
-                                    </div>
-                                ))}
-                            </div>
-                            <button type="submit" disabled={isSubmitting || !isL2Complete()} className="w-full mt-8 px-8 py-4 bg-teal-600 text-white font-bold text-lg rounded-lg shadow-md hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                {isSubmitting ? 'Submitting...' : 'Submit & View Report'}
+                         <div className="mt-8 flex justify-between items-center">
+                            <button onClick={handlePrevious} disabled={questionIndex === 0} className="px-6 py-3 bg-slate-700 text-white font-bold rounded-lg shadow-md hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                Previous
                             </button>
-                        </FormCard>
-                     </form>
+                            <button onClick={handleNext} disabled={isNextDisabled || isSubmitting} className="px-8 py-3 bg-sky-500 text-white font-bold rounded-lg shadow-lg hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                {isSubmitting ? 'Submitting...' : (isLastQuestion ? 'Submit & View Report' : 'Next')}
+                            </button>
+                        </div>
+                    </FormCard>
                 );
         }
     };
@@ -238,11 +266,7 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
-             {step !== 0 && step < 3 && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 whitespace-nowrap sm:left-auto sm:right-4 sm:-translate-x-0 bg-amber-200/90 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-                    PROTOTYPE: Please do not share without permission.
-                </div>
-            )}
+             {step === 3 && startTime && <Timer startTime={startTime} />}
             {renderContent()}
         </div>
     );
