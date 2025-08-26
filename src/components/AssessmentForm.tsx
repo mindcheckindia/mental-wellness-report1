@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
@@ -95,9 +94,9 @@ const AssessmentForm: React.FC = () => {
 
     const l2Questions = useMemo<QuestionWithContext[]>(() => {
         const LEVEL_2_THRESHOLD = 2;
-        const isL1Complete = l1Questions.every(q => answers[q.id] !== undefined);
-        if (!isL1Complete) return [];
-
+        // L2 questions are now determined dynamically as answers are given,
+        // without waiting for all of Part 1 to be complete. This prevents
+        // the question queue from being prematurely empty and causing a crash.
         return assessmentSections.flatMap(section => 
             section.questions
                 .filter(q => {
@@ -106,7 +105,7 @@ const AssessmentForm: React.FC = () => {
                 })
                 .map(q => ({ ...q, sectionTitle: section.title, timeframe: section.timeframeL2 || section.timeframe }))
         );
-    }, [answers, l1Questions]);
+    }, [answers]);
 
     const questionQueue = useMemo(() => [...l1Questions, ...l2Questions], [l1Questions, l2Questions]);
 
@@ -119,6 +118,7 @@ const AssessmentForm: React.FC = () => {
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
+        if (isSubmitting) return; // Prevent double submission
         setIsSubmitting(true);
         const submissionData = { ...userDetails, answers };
         try {
@@ -135,6 +135,20 @@ const AssessmentForm: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+    
+    useEffect(() => {
+        // This handles cases where L2 questions are not triggered and the form
+        // should submit automatically after the last L1 question is answered.
+        const isAssessmentActive = step === 3;
+        if (!isAssessmentActive || l1Questions.length === 0) return;
+
+        const allL1Answered = l1Questions.every(q => answers[q.id] !== undefined);
+        const noL2Triggered = l2Questions.length === 0;
+
+        if (allL1Answered && noL2Triggered && !isSubmitting) {
+            handleSubmit();
+        }
+    }, [answers, l1Questions, l2Questions, isSubmitting, step]);
 
     const handleNext = () => {
         if (questionIndex < questionQueue.length - 1) {
@@ -206,9 +220,10 @@ const AssessmentForm: React.FC = () => {
                 );
 
             case 3: // Assessment Question View
-                if (questionQueue.length === 0) {
-                     handleSubmit(); // Submit if no questions are queued (e.g., L2 not triggered)
-                     return <div className="text-white text-xl">Calculating your report...</div>;
+                if (!questionQueue[questionIndex]) {
+                     // This prevents a crash if the question isn't ready for a render cycle.
+                     // The useEffect hook will handle submission if the assessment is truly over.
+                     return <div className="text-white text-xl">{isSubmitting ? 'Calculating your report...' : 'Loading...'}</div>;
                 }
                 const currentQuestion = questionQueue[questionIndex];
                 
