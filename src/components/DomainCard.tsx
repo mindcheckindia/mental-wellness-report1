@@ -111,23 +111,23 @@ const DomainCard: React.FC<DomainCardProps> = ({ domain, index }) => {
                     </AccordionSection>
                     
                      <AccordionSection 
-                        title="Notable figures with similar experiences"
+                        title="Notable Figures"
                         icon={<UsersIcon className="h-6 w-6 text-teal-500" />}
                         isOpen={isFiguresOpen}
                         onToggle={() => setFiguresOpen(!isFiguresOpen)}
                         uniqueId={`figures-${domainId}`}>
                          {domain.individualsExperienced && domain.individualsExperienced.length > 0 ? (
-                             <div className="space-y-1 text-base">
+                             <ul className="space-y-1 list-disc list-inside">
                                  {domain.individualsExperienced.map((person, pIndex) => (
-                                     <div key={pIndex}>
+                                     <li key={pIndex}>
                                          <a href={person.link} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline font-medium">
                                              {person.name}
                                          </a>
-                                     </div>
+                                     </li>
                                  ))}
-                             </div>
+                             </ul>
                          ) : (
-                             <p className="text-slate-600 italic text-base">N/A</p>
+                             <p className="text-slate-600 italic">N/A</p>
                          )}
                     </AccordionSection>
                 </div>
