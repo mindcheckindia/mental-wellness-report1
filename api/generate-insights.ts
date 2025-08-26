@@ -1,7 +1,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import type { IndividualData, Domain, ReferenceInterval } from './_lib/assessment.js';
+import type { IndividualData, Domain } from './_lib/assessment.js';
 
 // Initialize the Gemini AI client securely on the server-side.
 const apiKey = process.env.API_KEY;
