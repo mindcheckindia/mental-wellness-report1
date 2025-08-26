@@ -166,7 +166,7 @@ const AssessmentForm: React.FC = () => {
                             {l1Sections.map(section => (
                                 <div key={section.title}>
                                     <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
-                                    <p className="text-slate-300 italic mb-6">{section.timeframe}</p>
+                                    <p className="inline-block bg-sky-900/70 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6 shadow-sm border border-sky-700/50">{section.timeframe}</p>
                                     {section.questions.map(q => (
                                          <fieldset key={q.id} className="mb-8">
                                             <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>
@@ -206,7 +206,7 @@ const AssessmentForm: React.FC = () => {
                                 {visibleL2Sections.map(section => (
                                     <div key={section.title}>
                                         <h2 className="text-2xl font-semibold text-sky-300 mb-2">{section.title}</h2>
-                                        <p className="text-slate-300 italic mb-6">{section.timeframeL2 || section.timeframe}</p>
+                                        <p className="inline-block bg-sky-900/70 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6 shadow-sm border border-sky-700/50">{section.timeframeL2 || section.timeframe}</p>
                                         {section.questions.map(q => (
                                              <fieldset key={q.id} className="mb-8">
                                                 <legend className="text-lg font-medium text-white whitespace-pre-wrap">{q.text}</legend>

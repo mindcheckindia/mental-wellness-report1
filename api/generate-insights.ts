@@ -1,7 +1,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import type { IndividualData } from './_lib/assessment.js';
+import type { IndividualData, Domain, ReferenceInterval } from './_lib/assessment.js';
 
 // Initialize the Gemini AI client securely on the server-side.
 const apiKey = process.env.API_KEY;
@@ -26,6 +26,44 @@ const responseSchema = {
     required: ['insights']
 };
 
+/**
+ * Generates a descriptive context string for a given domain's score to guide the AI.
+ * @param domain - The domain object containing name, score, intervals, and interpretation.
+ * @returns A string explaining the score's meaning.
+ */
+function getDomainScoringContext(domain: { name: string, score: number | null, referenceIntervals: ReferenceInterval[], userInterpretation: string }): string {
+    const score = domain.score;
+    if (score === null) {
+        return "The user did not complete enough questions for a score to be calculated for this domain.";
+    }
+    const interpretation = domain.userInterpretation;
+
+    switch (domain.name) {
+        case 'Depression':
+        case 'Anger':
+        case 'Anxiety':
+        case 'Sleep Disturbance':
+            return `This domain is measured using a PROMIS T-Score. In the general population, the average T-Score is 50. Higher scores indicate more significant symptoms. The user's score of ${score.toFixed(1)} falls into the '${interpretation}' range.`;
+        case 'Mania':
+            return `This domain is measured using the Altman Self-Rating Mania Scale (ASRM). A score of 6 or higher is considered a positive screen, suggesting a high probability of manic or hypomanic symptoms. The user scored ${score}.`;
+        case 'Somatic Symptoms':
+            return `This domain is measured using the Patient Health Questionnaire 15 (PHQ-15). Scores of 5, 10, and 15 are cutoff points for low, medium, and high symptom severity, respectively. The user's score of ${score} indicates a '${interpretation}' level of severity.`;
+        case 'Obsessions & Compulsions':
+            return `This domain is measured by the Florida Obsessive-Compulsive Inventory (FOCI), with an average score from 0 (None) to 4 (Extreme). The user's average score of ${score.toFixed(1)} suggests a '${interpretation}' level of severity.`;
+        case 'Suicide Ideation':
+        case 'Psychosis':
+        case 'Cognition':
+        case 'Dissociation':
+        case 'Personality Functioning':
+            const threshold = domain.referenceIntervals.find(i => i.label.includes('Further inquiry'))?.min ?? 1;
+            const isAboveThreshold = score >= threshold;
+            return `This is a screening domain where responses are evaluated against a clinical threshold. The user's score of ${score} is ${isAboveThreshold ? 'at or above' : 'below'} the threshold for which further inquiry is indicated.`;
+        default:
+            return `The user's score is ${score}. The interpretation is '${interpretation}'.`;
+    }
+}
+
+
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse,
@@ -47,20 +85,25 @@ export default async function handler(
     const prompt = `
         You are an expert and compassionate clinical psychologist providing feedback on a mental wellness self-assessment.
         The user's name is ${userData.firstName}. Their results are in this JSON object:
-        ${JSON.stringify(userData.domains.map(d => ({ name: d.name, interpretation: d.userInterpretation, score: d.score })), null, 2)}
+        ${JSON.stringify(userData.domains.map(d => ({ 
+            name: d.name, 
+            interpretation: d.userInterpretation, 
+            score: d.score,
+            scoringContext: getDomainScoringContext({ name: d.name, score: d.score, referenceIntervals: d.referenceIntervals, userInterpretation: d.userInterpretation })
+        })), null, 2)}
 
         For each domain, generate a personalized "Insights & Support" message. Your response MUST be a JSON object matching the provided schema. The 'insights' array must have the same number of elements as the input domains.
 
         Follow this three-part structure for each message, addressing ${userData.firstName} by name:
-        1.  **Acknowledge & Validate:** Start by empathetically acknowledging their result without using the exact interpretation label (e.g., for "Moderate," say "It appears you're dealing with a noticeable level of...").
-        2.  **Explain Potential Impact:** Briefly and gently explain how these feelings or symptoms might show up in their daily life (e.g., "This can sometimes make it challenging to...").
-        3.  **Provide Tiered, Actionable Guidance:**
-            - If the interpretation is "Minimal," "None to slight," "None," "Low," or "Healthy," provide positive reinforcement. (e.g., "It's great that you're feeling steady in this area. Continuing to... will help maintain this balance.")
-            - If the interpretation is "Mild" or "Some Difficulties," suggest gentle, actionable self-care strategies. (e.g., "Exploring practices like mindfulness, journaling, or talking with a trusted friend can be a helpful next step.")
-            - If the interpretation is "Moderate," "Medium," or "High," suggest concrete strategies and gently encourage professional consultation. (e.g., "It may be beneficial to explore this with a professional. A therapist can provide tools and strategies tailored specifically to you.")
-            - If the interpretation is "Severe," "High Probability," "High Risk," or indicates "Further inquiry indicated," gently but clearly recommend professional help. (e.g., "These feelings can be very challenging to manage alone. We strongly encourage you to connect with a mental health professional or a trusted doctor to discuss these results and find the best path forward for you.")
+        1.  **Acknowledge & Explain:** Start by empathetically acknowledging their result. Use the 'scoringContext' to explain what their score means in simple, jargon-free terms. For example, if the context says "T-Score where 50 is average," you could say, "Your score is a bit above the population average, suggesting you're experiencing these feelings more than most people."
+        2.  **Describe Potential Impact:** Briefly and gently explain how these feelings or symptoms might show up in their daily life (e.g., "This can sometimes make it challenging to...").
+        3.  **Provide Tiered, Actionable Guidance:** Based on their specific interpretation and score:
+            - If the interpretation suggests healthy functioning ("Minimal," "None," "Low," "Within normal limits"), provide positive reinforcement and wellness tips. (e.g., "It's great that you're feeling steady in this area. To maintain this, consider continuing practices like...")
+            - If the interpretation is "Mild" or shows some difficulties, suggest gentle, actionable self-care strategies. (e.g., "Since you're noticing a mild level of these feelings, exploring practices like mindfulness or journaling could be a helpful next step.")
+            - If the interpretation is "Moderate," suggest concrete strategies and gently encourage professional consultation. (e.g., "Managing a moderate level of these symptoms can be tough. It may be beneficial to explore this with a professional who can provide tailored tools and strategies.")
+            - If the interpretation is "Severe," "High," or "Further inquiry indicated," gently but clearly recommend professional help as a primary next step. (e.g., "These feelings can be very challenging to manage alone, and your score suggests they are having a significant impact. We strongly encourage you to connect with a mental health professional to discuss these results and find the best path forward.")
             
-        Each insight should be professional, supportive, and about 3-4 sentences long. Do not give a diagnosis or use alarmist language.
+        Each insight must be professional, supportive, and about 3-4 sentences long. Do not give a diagnosis or use alarmist language. Tailor the tone to the severity of the score.
     `;
 
     const aiResponse: GenerateContentResponse = await ai.models.generateContent({

@@ -6,25 +6,25 @@ const LEVEL_2_THRESHOLD = 2; // "Mild" or greater
 
 // --- Standard Answer Sets ---
 const LEVEL_1_ANSWERS: AnswerOption[] = [
-    { text: 'Not at all, really.', value: 0 },
-    { text: 'Only once or twice.', value: 1 },
-    { text: 'A few times.', value: 2 },
-    { text: 'Fairly often.', value: 3 },
-    { text: 'Almost constantly.', value: 4 },
+    { text: 'Not at all', value: 0 },
+    { text: 'Rarely (less than a day or two)', value: 1 },
+    { text: 'Sometimes (several days)', value: 2 },
+    { text: 'Often (more than half the days)', value: 3 },
+    { text: 'Nearly every day', value: 4 },
 ];
 
 const PROMIS_ANSWERS: AnswerOption[] = [
-    { value: 1, text: "I haven't felt this way." },
-    { value: 2, text: "Rarely, if ever." },
-    { value: 3, text: "Sometimes." },
-    { value: 4, text: "Often." },
-    { value: 5, text: "Pretty much always." },
+    { value: 1, text: "Never" },
+    { value: 2, text: "Rarely" },
+    { value: 3, text: "Sometimes" },
+    { value: 4, text: "Often" },
+    { value: 5, text: "Always" },
 ];
 
 const PHQ15_ANSWERS: AnswerOption[] = [
-    { value: 0, text: "It hasn't bothered me." },
-    { value: 1, text: "It has bothered me a little." },
-    { value: 2, text: "It has bothered me a lot." }
+    { value: 0, text: "Not bothered at all" },
+    { value: 1, text: "Bothered a little" },
+    { value: 2, text: "Bothered a lot" }
 ];
 
 // --- Clinically-Accurate Assessment Structure with User-Friendly Language ---
@@ -157,7 +157,7 @@ export const assessmentSections: AssessmentSection[] = [
             { id: 'slp_l2_4', text: 'Over the last 7 days, did you have difficulty falling asleep?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 1, text: 'Not at all' }, { value: 2, text: 'A little bit' }, { value: 3, text: 'Somewhat' }, { value: 4, text: 'Quite a bit' }, { value: 5, text: 'Very much' } ]},
             { id: 'slp_l2_5', text: 'Over the last 7 days, how often did you have trouble staying asleep?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'slp_l2_6', text: 'Over the last 7 days, how often did you have trouble sleeping?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'slp_l2_7', text: 'Over the last 7 days, how often did you get enough sleep?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: "I haven't" }, { value: 4, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 2, text: 'Often' }, { value: 1, text: 'Always' } ]},
+            { id: 'slp_l2_7', text: 'Over the last 7 days, how often did you get enough sleep?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: "Never" }, { value: 4, text: 'Rarely' }, { value: 3, text: 'Sometimes' }, { value: 2, text: 'Often' }, { value: 1, text: 'Always' } ]},
             { id: 'slp_l2_8', text: 'Over the last 7 days, how would you rate your sleep quality overall?', mandatory: false, condition: { triggerIds: ['slp_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [ { value: 5, text: 'Very Poor' }, { value: 4, text: 'Poor' }, { value: 3, text: 'Fair' }, { value: 2, text: 'Good' }, { value: 1, text: 'Very Good' } ]},
         ]
     },
