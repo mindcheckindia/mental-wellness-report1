@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
@@ -261,7 +262,10 @@ const AssessmentForm: React.FC = () => {
                             </div>
 
                             <fieldset key={currentQuestion.id} className="flex-grow">
-                                <legend className="text-lg font-medium text-white whitespace-pre-wrap mb-4">{currentQuestion.text}</legend>
+                                <legend className="text-lg font-medium text-white whitespace-pre-wrap mb-2">{currentQuestion.text}</legend>
+                                {currentQuestion.description && (
+                                    <p className="text-sm text-sky-200 mb-4 italic">{currentQuestion.description}</p>
+                                )}
                                 <div className="space-y-3">
                                     {(shuffledOptions[currentQuestion.id] || currentQuestion.answerOptions).map(opt => (
                                         <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[currentQuestion.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>

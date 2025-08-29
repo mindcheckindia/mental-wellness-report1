@@ -1,4 +1,5 @@
 
+
 export interface AnswerOption {
     text: string;
     value: number;
@@ -7,6 +8,7 @@ export interface AnswerOption {
 export interface Question {
     id: string;
     text: string;
+    description?: string;
     mandatory: boolean;
     condition?: {
         triggerIds: string[];

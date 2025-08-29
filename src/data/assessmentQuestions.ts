@@ -16,16 +16,16 @@ const LEVEL_1_ANSWERS: AnswerOption[] = [
 
 const PROMIS_ANSWERS: AnswerOption[] = [
     { value: 1, text: "Never" },
-    { value: 2, text: "Rarely" },
-    { value: 3, text: "Sometimes" },
-    { value: 4, text: "Often" },
-    { value: 5, text: "Always" },
+    { value: 2, text: "Rarely (about 1 day in the week)" },
+    { value: 3, text: "Sometimes (2-3 days in the week)" },
+    { value: 4, text: "Often (4-5 days in the week)" },
+    { value: 5, text: "Always (nearly every day)" },
 ];
 
 const PHQ15_ANSWERS: AnswerOption[] = [
-    { value: 0, text: "Not bothered at all" },
-    { value: 1, text: "Bothered a little" },
-    { value: 2, text: "Bothered a lot" }
+    { value: 0, text: "Not bothered at all (it didn't affect me)" },
+    { value: 1, text: "Bothered a little (it was noticeable but manageable)" },
+    { value: 2, text: "Bothered a lot (it significantly interfered with my day)" }
 ];
 
 // --- Clinically-Accurate Assessment Structure with User-Friendly Language ---
@@ -38,9 +38,9 @@ export const assessmentSections: AssessmentSection[] = [
             { id: 'dep_l1_1', text: 'How often have you found it hard to get excited about things you usually enjoy?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'dep_l1_2', text: 'How often have you felt down, hopeless, or noticed a persistent low mood?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             
-            { id: 'dep_l2_1', text: 'How often have you felt like you are not good enough?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_1', text: 'How often have you felt worthless or not good enough?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'dep_l2_2', text: 'How often have you felt like there was nothing to look forward to?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'dep_l2_3', text: 'How often have you felt helpless?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'dep_l2_3', text: 'How often have you felt helpless?', description: 'This means feeling like there was nothing you could do to make things better.', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'dep_l2_4', text: 'How often have you felt sad?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'dep_l2_5', text: 'How often have you felt like a failure?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'dep_l2_6', text: 'How often have you felt depressed?', mandatory: false, condition: { triggerIds: ['dep_l1_1', 'dep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
@@ -55,10 +55,10 @@ export const assessmentSections: AssessmentSection[] = [
         questions: [
             { id: 'ang_l1_1', text: 'Have you been feeling more irritable, easily annoyed, or angry than usual?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
 
-            { id: 'ang_l2_1', text: 'How often have you been more irritable than people around you might have known?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_1', text: 'How often have you felt irritable on the inside, even if you didn\'t show it?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'ang_l2_2', text: 'How often have you felt angry?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'ang_l2_3', text: 'How often have you felt like you were ready to explode?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'ang_l2_4', text: 'How often have you felt grouchy?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'ang_l2_4', text: 'How often have you felt grouchy or in a bad mood?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'ang_l2_5', text: 'How often have you felt annoyed?', mandatory: false, condition: { triggerIds: ['ang_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
         ]
     },
@@ -71,19 +71,19 @@ export const assessmentSections: AssessmentSection[] = [
             { id: 'man_l1_2', text: 'Have you been starting more new projects or taking more risks than you typically would?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             
             { id: 'man_l2_1', text: 'How would you describe your mood?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "I haven't felt unusually happy or cheerful." }, { value: 1, text: "I've occasionally felt happier than usual." }, { value: 2, text: "I've often felt happier than usual." }, { value: 3, text: "I've felt happier most of the time." }, { value: 4, text: "I've felt happier and more cheerful constantly." },
+                { value: 0, text: "My usual self; no unusual happiness." }, { value: 1, text: "Occasionally more cheerful than my usual self." }, { value: 2, text: "Often much happier or more energetic than usual." }, { value: 3, text: "Felt very happy, high, or 'on' for long periods." }, { value: 4, text: "Felt euphoric, on top of the world constantly." },
             ]},
             { id: 'man_l2_2', text: 'How has your self-confidence been?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "I haven't felt more self-confident than usual." }, { value: 1, text: "I've occasionally felt more self-confident." }, { value: 2, text: "I've often felt more self-confident." }, { value: 3, text: "I've frequently felt more self-confident." }, { value: 4, text: "I've felt extremely self-confident all the time." },
+                { value: 0, text: "My usual level of self-confidence." }, { value: 1, text: "Occasionally felt more self-confident." }, { value: 2, text: "Often felt more self-confident than usual." }, { value: 3, text: "Felt much more self-confident." }, { value: 4, text: "Felt extremely self-confident, like I could do anything." },
             ]},
             { id: 'man_l2_3', text: 'How would you describe your need for sleep?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "I haven't needed less sleep than usual." }, { value: 1, text: "I've occasionally needed less sleep." }, { value: 2, text: "I've often needed less sleep." }, { value: 3, text: "I've frequently needed less sleep." }, { value: 4, text: "I can go without sleep and still not feel tired." },
+                { value: 0, text: "My usual need for sleep." }, { value: 1, text: "Occasionally felt I needed less sleep." }, { value: 2, text: "Often needed less sleep to feel rested." }, { value: 3, text: "Frequently needed much less sleep." }, { value: 4, text: "Could go without sleep and still not feel tired." },
             ]},
             { id: 'man_l2_4', text: 'How much have you been talking?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "I haven't been talking more than usual." }, { value: 1, text: "I've occasionally talked more than usual." }, { value: 2, text: "I've often talked more than usual." }, { value: 3, text: "I've frequently talked more than usual." }, { value: 4, text: "I've been talking constantly and can't be interrupted." },
+                { value: 0, text: "My usual amount." }, { value: 1, text: "Occasionally talked more than I usually do." }, { value: 2, text: "Often talked more, and maybe faster, than usual." }, { value: 3, text: "Talked a lot more; others had a hard time getting a word in." }, { value: 4, text: "Talked constantly and couldn't be interrupted." },
             ]},
             { id: 'man_l2_5', text: 'How would you describe your activity level (socially, at work, etc.)?', mandatory: false, condition: { triggerIds: ['man_l1_1', 'man_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "I haven't been more active than usual." }, { value: 1, text: "I've occasionally been more active." }, { value: 2, text: "I've often been more active." }, { value: 3, text: "I've frequently been more active." }, { value: 4, text: "I'm constantly active or on the go." },
+                { value: 0, text: "My usual activity level." }, { value: 1, text: "Occasionally been more active." }, { value: 2, text: "Often been more active." }, { value: 3, text: "Frequently been much more active." }, { value: 4, text: "Was constantly active or on the go." },
             ]},
         ]
     },
@@ -92,17 +92,17 @@ export const assessmentSections: AssessmentSection[] = [
         timeframe: 'Thinking about the last two weeks...',
         timeframeL2: 'Thinking about the last 7 days...',
         questions: [
-            { id: 'anx_l1_1', text: 'Have you been feeling nervous, anxious, worried, or on edge?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
+            { id: 'anx_l1_1', text: 'Have you been feeling nervous, anxious, worried, or on edge?', description: 'This can include physical feelings (like a racing heart) or mental ones (like a sense of dread).', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'anx_l1_2', text: 'Have you experienced moments of panic or intense fear?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'anx_l1_3', text: 'Have you found yourself actively avoiding situations that make you anxious?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
 
-            { id: 'anx_l2_1', text: 'How often have you felt fearful?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'anx_l2_2', text: 'How often have you felt anxious?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'anx_l2_3', text: 'How often have you felt worried?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_1', text: 'How often have you felt fearful?', description: 'Feeling afraid or scared, as if you are in danger.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_2', text: 'How often have you felt anxious?', description: 'A general feeling of dread or apprehension about what\'s to come.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_3', text: 'How often have you felt worried?', description: 'Thinking repeatedly about problems or things that might go wrong.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
             { id: 'anx_l2_4', text: 'How often have you found it hard to focus on anything other than your anxiety?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'anx_l2_5', text: 'How often have you felt nervous?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'anx_l2_6', text: 'How often have you felt uneasy?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
-            { id: 'anx_l2_7', text: 'How often have you felt tense?', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_5', text: 'How often have you felt nervous?', description: 'Feeling jumpy, jittery, or restless.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_6', text: 'How often have you felt uneasy?', description: 'A vague feeling that something isn\'t quite right.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
+            { id: 'anx_l2_7', text: 'How often have you felt tense?', description: 'Feeling physically tight (e.g., in your shoulders) or mentally strained.', mandatory: false, condition: { triggerIds: ['anx_l1_1', 'anx_l1_2', 'anx_l1_3'], threshold: LEVEL_2_THRESHOLD }, answerOptions: PROMIS_ANSWERS },
         ]
     },
     {
@@ -183,7 +183,7 @@ export const assessmentSections: AssessmentSection[] = [
         timeframe: 'Thinking about the last two weeks...',
         questions: [
             { id: 'mem_l1_1', text: 'Have you had problems with your memory or concentration?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mild difficulty" }, { value: 3, text: "Moderate difficulty" }, { value: 4, text: "Severe difficulty" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mild difficulty (Noticeable, but I could manage)" }, { value: 3, text: "Moderate difficulty (It clearly affected my tasks)" }, { value: 4, text: "Severe difficulty (It significantly impacted my ability to function)" }
             ]},
         ]
     },
@@ -196,16 +196,16 @@ export const assessmentSections: AssessmentSection[] = [
             { id: 'rep_l1_2', text: 'Have you felt the need to check things repeatedly or perform certain routines over and over?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
 
             { id: 'rep_l2_1', text: 'How much have these thoughts bothered you?', mandatory: false, condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
+                { value: 0, text: "Not at all" }, { value: 1, text: "A little (Noticeable but manageable)" }, { value: 2, text: "Moderately (Caused some distress)" }, { value: 3, text: "A lot (Caused significant distress)" }, { value: 4, text: "Extremely (Caused overwhelming distress)" },
             ]},
             { id: 'rep_l2_2', text: 'How much have these thoughts interfered with your work, school, social or family life?', mandatory: false, condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
                 { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
             ]},
             { id: 'rep_l2_3', text: 'How much time do your repetitive behaviors occupy?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "None" }, { value: 1, text: "A little of my time" }, { value: 2, text: "Some of my time" }, { value: 3, text: "A lot of my time" }, { value: 4, text: "A great deal of my time" },
+                { value: 0, text: "None" }, { value: 1, text: "A little of my time (Less than 1 hr/day)" }, { value: 2, text: "Some of my time (1-3 hrs/day)" }, { value: 3, text: "A lot of my time (3-8 hrs/day)" }, { value: 4, text: "A great deal of my time (More than 8 hrs/day)" },
             ]},
             { id: 'rep_l2_4', text: 'How much do these behaviors interfere with your work, school, social or family life?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
+                { value: 0, text: "Not at all" }, { value: 1, text: "A little (Slight interference)" }, { value: 2, text: "Moderately (Definite interference)" }, { value: 3, text: "A lot (Substantial impairment)" }, { value: 4, text: "Extremely (Incapacitating)" },
             ]},
             { id: 'rep_l2_5', text: 'How much distress do these behaviors cause you?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
                 { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
@@ -217,7 +217,7 @@ export const assessmentSections: AssessmentSection[] = [
         timeframe: 'Thinking about the last two weeks...',
         questions: [
             { id: 'dis_l1_1', text: 'Have you had times when you feel "unreal" or "outside" of your own body, or that the world around you seems strange and distant?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly" }, { value: 3, text: "Moderately" }, { value: 4, "text": "Severely" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (The feeling was brief and not too disruptive)" }, { value: 3, text: "Moderately (The feeling was noticeable and unsettling)" }, { value: 4, "text": "Severely (The feeling was intense and very distressing)" }
             ]},
         ]
     },
@@ -226,10 +226,10 @@ export const assessmentSections: AssessmentSection[] = [
         timeframe: 'Thinking about the last two weeks...',
         questions: [
             { id: 'per_l1_1', text: 'Have you had a lot of problems with how you see yourself, such as feeling like you don’t know who you are or that you are changing a lot?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly" }, { value: 3, text: "Moderately" }, { value: 4, "text": "Severely" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I\'ve noticed this, but it doesn\'t cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
             ]},
             { id: 'per_l1_2', text: 'Have you had a lot of problems with relationships, such as feeling like you can’t trust people or that you are always in conflict?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly" }, { value: 3, text: "Moderately" }, { value: 4, "text": "Severely" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I\'ve noticed this, but it doesn\'t cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
             ]},
         ]
     }
