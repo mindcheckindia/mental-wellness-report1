@@ -1,5 +1,4 @@
 
-
 import { AnswerOption, AssessmentSection } from '../types';
 
 // Thresholds for showing Level 2 questions based on Level 1 answers
@@ -195,21 +194,73 @@ export const assessmentSections: AssessmentSection[] = [
             { id: 'rep_l1_1', text: 'Have you been bothered by unpleasant thoughts that enter your mind that you can\'t get rid of?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
             { id: 'rep_l1_2', text: 'Have you felt the need to check things repeatedly or perform certain routines over and over?', mandatory: true, answerOptions: LEVEL_1_ANSWERS },
 
-            { id: 'rep_l2_1', text: 'How much have these thoughts bothered you?', mandatory: false, condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little (Noticeable but manageable)" }, { value: 2, text: "Moderately (Caused some distress)" }, { value: 3, text: "A lot (Caused significant distress)" }, { value: 4, text: "Extremely (Caused overwhelming distress)" },
-            ]},
-            { id: 'rep_l2_2', text: 'How much have these thoughts interfered with your work, school, social or family life?', mandatory: false, condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
-            ]},
-            { id: 'rep_l2_3', text: 'How much time do your repetitive behaviors occupy?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "None" }, { value: 1, text: "A little of my time (Less than 1 hr/day)" }, { value: 2, text: "Some of my time (1-3 hrs/day)" }, { value: 3, text: "A lot of my time (3-8 hrs/day)" }, { value: 4, text: "A great deal of my time (More than 8 hrs/day)" },
-            ]},
-            { id: 'rep_l2_4', text: 'How much do these behaviors interfere with your work, school, social or family life?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little (Slight interference)" }, { value: 2, text: "Moderately (Definite interference)" }, { value: 3, text: "A lot (Substantial impairment)" }, { value: 4, text: "Extremely (Incapacitating)" },
-            ]},
-            { id: 'rep_l2_5', text: 'How much distress do these behaviors cause you?', mandatory: false, condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD }, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "A little" }, { value: 2, text: "Moderately" }, { value: 3, text: "A lot" }, { value: 4, text: "Extremely" },
-            ]},
+            {
+                id: 'rep_l2_1',
+                text: 'Regarding any intrusive or unwanted thoughts, how much have they bothered you?',
+                description: 'This refers to the unpleasant thoughts you mentioned being unable to get rid of.',
+                mandatory: false,
+                condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD },
+                answerOptions: [
+                    { value: 0, text: "Not at all" },
+                    { value: 1, text: "A little (Noticeable but manageable)" },
+                    { value: 2, text: "Moderately (Caused some distress)" },
+                    { value: 3, text: "A lot (Caused significant distress)" },
+                    { value: 4, text: "Extremely (Caused overwhelming distress)" },
+                ]
+            },
+            {
+                id: 'rep_l2_2',
+                text: 'How much have these intrusive thoughts interfered with your daily life (e.g., work, school, family)?',
+                mandatory: false,
+                condition: { triggerIds: ['rep_l1_1'], threshold: LEVEL_2_THRESHOLD },
+                answerOptions: [
+                    { value: 0, text: "Not at all" },
+                    { value: 1, text: "A little" },
+                    { value: 2, text: "Moderately" },
+                    { value: 3, text: "A lot" },
+                    { value: 4, text: "Extremely" },
+                ]
+            },
+            {
+                id: 'rep_l2_3',
+                text: 'On an average day, how much time is occupied by repetitive routines or checking behaviors?',
+                description: 'This refers to the need to check things or perform routines repeatedly.',
+                mandatory: false,
+                condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD },
+                answerOptions: [
+                    { value: 0, text: "None" },
+                    { value: 1, text: "A little of my time (Less than 1 hr/day)" },
+                    { value: 2, text: "Some of my time (1-3 hrs/day)" },
+                    { value: 3, text: "A lot of my time (3-8 hrs/day)" },
+                    { value: 4, text: "A great deal of my time (More than 8 hrs/day)" },
+                ]
+            },
+            {
+                id: 'rep_l2_4',
+                text: 'How much do these repetitive routines interfere with your daily life (e.g., work, school, family)?',
+                mandatory: false,
+                condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD },
+                answerOptions: [
+                    { value: 0, text: "Not at all" },
+                    { value: 1, text: "A little (Slight interference)" },
+                    { value: 2, text: "Moderately (Definite interference)" },
+                    { value: 3, text: "A lot (Substantial impairment)" },
+                    { value: 4, text: "Extremely (Incapacitating)" },
+                ]
+            },
+            {
+                id: 'rep_l2_5',
+                text: 'How much emotional distress do these repetitive routines or checking behaviors cause you?',
+                mandatory: false,
+                condition: { triggerIds: ['rep_l1_2'], threshold: LEVEL_2_THRESHOLD },
+                answerOptions: [
+                    { value: 0, text: "Not at all" },
+                    { value: 1, text: "A little" },
+                    { value: 2, text: "Moderately" },
+                    { value: 3, text: "A lot" },
+                    { value: 4, text: "Extremely" },
+                ]
+            },
         ]
     },
     {
@@ -226,10 +277,10 @@ export const assessmentSections: AssessmentSection[] = [
         timeframe: 'Thinking about the last two weeks...',
         questions: [
             { id: 'per_l1_1', text: 'Have you had a lot of problems with how you see yourself, such as feeling like you don’t know who you are or that you are changing a lot?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I\'ve noticed this, but it doesn\'t cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I've noticed this, but it doesn't cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
             ]},
             { id: 'per_l1_2', text: 'Have you had a lot of problems with relationships, such as feeling like you can’t trust people or that you are always in conflict?', mandatory: true, answerOptions: [
-                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I\'ve noticed this, but it doesn\'t cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
+                { value: 0, text: "Not at all" }, { value: 1, text: "Once or twice" }, { value: 2, text: "Mildly (I've noticed this, but it doesn't cause major issues)" }, { value: 3, text: "Moderately (These problems are causing noticeable friction)" }, { value: 4, "text": "Severely (These problems are causing significant distress)" }
             ]},
         ]
     }
