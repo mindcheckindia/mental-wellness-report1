@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import { BrandIcon } from './icons';
@@ -191,7 +192,7 @@ const AssessmentForm: React.FC = () => {
                     <FormCard className="text-center max-w-4xl">
                         <BrandIcon className="h-16 w-16 mx-auto text-sky-400 mb-6" />
                         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
-                            Mindcheck<sup className="text-lg sm:text-2xl font-medium">&reg;</sup> Personalized Mental Wellness Blueprint
+                            Personalized Mental Wellness Blueprint
                         </h1>
                         <p className="text-lg text-sky-300 font-semibold mb-8">First of its kind adaptive assessment- backed by scientific research, powered by AI</p>
                         <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This isn't just another generic mental health assessment. It's a scientifically-designed, dynamic assessment that <span className="text-slate-100 font-medium">adapts in real-time</span> to your unique well-being needs.</p>
