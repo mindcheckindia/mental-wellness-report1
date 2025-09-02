@@ -187,10 +187,10 @@ const AssessmentForm: React.FC = () => {
             case 0: // Welcome
                 return (
                     <FormCard className="max-w-4xl">
-                        <div className="mb-8 transform scale-[1.76] origin-top-left">
+                        <div className="mb-8 transform scale-[1.32] origin-top-left">
                             <Logo />
                         </div>
-                        <div className="text-left">
+                        <div className="flex flex-col items-center text-center">
                             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 font-lora tracking-tight">
                                 Personalized Mental Wellness Blueprint
                             </h1>
