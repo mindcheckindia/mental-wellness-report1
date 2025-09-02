@@ -186,7 +186,7 @@ const AssessmentForm: React.FC = () => {
             case 0: // Welcome
                 return (
                     <FormCard className="flex flex-col items-center text-center max-w-4xl">
-                        <div className="mb-6">
+                        <div className="flex justify-center mb-6">
                             <Logo />
                         </div>
                         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
