@@ -1,10 +1,6 @@
-
-
-
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
-import { BrandIcon } from './icons';
+import Logo from './Logo';
 import { AnswerOption, Question } from '../types';
 import { shuffleArray } from '../utils/helpers';
 import AnimatedBackground from './AnimatedBackground';
@@ -190,7 +186,9 @@ const AssessmentForm: React.FC = () => {
             case 0: // Welcome
                 return (
                     <FormCard className="text-center max-w-4xl">
-                        <BrandIcon className="h-16 w-16 mx-auto text-sky-400 mb-6" />
+                        <div className="flex justify-center mb-6">
+                            <Logo />
+                        </div>
                         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
                             Personalized Mental Wellness Blueprint
                         </h1>
@@ -297,6 +295,11 @@ const AssessmentForm: React.FC = () => {
                 <AnimatedBackground />
                 <div className="absolute inset-0 bg-slate-900/40"></div>
             </div>
+             {step > 0 && (
+                <div className="fixed bottom-4 left-4 opacity-60 transform scale-75 origin-bottom-left z-20" aria-hidden="true">
+                    <Logo />
+                </div>
+            )}
              {step === 3 && (
                 <div className="absolute top-4 left-4 text-xs font-semibold text-amber-200 text-center">
                     <div className="bg-slate-900/50 px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">

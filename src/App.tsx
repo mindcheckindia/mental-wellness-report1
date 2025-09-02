@@ -1,6 +1,3 @@
-
-
-
 import React, { useRef, useState, useEffect } from 'react';
 import { IndividualData } from './types';
 import { globalResources } from './data/globalData';
@@ -15,7 +12,7 @@ import AtAGlance from './components/AtAGlance';
 import VerificationSeal from './components/VerificationSeal';
 import AssessmentForm from './components/AssessmentForm';
 import { fetchDynamicReportData, fetchInsights } from './services/api';
-import { BrandIcon } from './components/icons';
+import Logo from './components/Logo';
 import NextSteps from './components/NextSteps';
 
 const App: React.FC = () => {
@@ -71,7 +68,9 @@ const App: React.FC = () => {
     if (loadingState.isLoading) {
         return (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4 font-inter text-center">
-                <BrandIcon className="h-16 w-16 mx-auto text-sky-600 mb-6 animate-pulse" />
+                <div className="mb-6 animate-pulse">
+                    <Logo />
+                </div>
                 <h1 className="text-3xl font-bold text-slate-800">{loadingState.message}</h1>
                 <p className="text-slate-600 mt-2">This may take a few moments. Thank you for your patience.</p>
             </div>
