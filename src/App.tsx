@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { IndividualData } from './types';
 import { globalResources } from './data/globalData';
@@ -131,6 +132,9 @@ const App: React.FC = () => {
                             </div>
                         </div>
                         <div><NextSteps /></div>
+                        <div className="text-center text-xs text-slate-500 mt-8 pb-4">
+                            © 2025 Mind Path Lab. All rights reserved.
+                        </div>
                     </div>
                 </main>
             </div>

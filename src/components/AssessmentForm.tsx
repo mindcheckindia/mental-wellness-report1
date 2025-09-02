@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { assessmentSections } from '../data/assessmentQuestions';
 import Logo from './Logo';
@@ -185,22 +186,24 @@ const AssessmentForm: React.FC = () => {
         switch (step) {
             case 0: // Welcome
                 return (
-                    <FormCard className="flex flex-col items-center text-center max-w-4xl">
-                        <div className="mb-6 transform scale-[.88]">
+                    <FormCard className="max-w-4xl">
+                        <div className="mb-6 transform scale-[1.76] origin-top-left">
                             <Logo />
                         </div>
-                        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
-                            Personalized Mental Wellness Blueprint
-                        </h1>
-                        <p className="text-lg text-sky-300 font-semibold mb-8">First of its kind adaptive assessment- backed by scientific research, powered by AI</p>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This isn't just another generic mental health assessment. It's a scientifically-designed, dynamic assessment that <span className="text-slate-100 font-medium">adapts in real-time</span> to your unique well-being needs.</p>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">Our methodology is grounded in established clinical frameworks, such as the <span className="text-slate-100 font-medium">DSM-5 criteria</span> and <span className="text-slate-100 font-medium">PROMIS® scales</span>.</p>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">The process is simple: Part 1 is a brief check-in. Your confidential responses here will intelligently shape Part 2, tailoring the deeper-dive questions to focus only on what's most relevant to you. This is much like how a physician uses an initial consultation to determine the need for specific follow-up tests.</p>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">Our ambition is to provide you with mental wellness insights that have the same <span className="text-slate-100 font-medium">clarity and depth as a physiological test</span>, like a blood analysis. This precise, adaptive approach creates a more accurate picture of your well-being, delivering <span className="text-slate-100 font-medium">actionable insights</span> to advance your personal mental wellness journey.</p>
-                        <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-8">Your privacy is our top priority. All data you provide is <span className="text-sky-300 font-semibold">encrypted</span> and handled with the highest privacy standards to ensure your information remains secure and confidential.</p>
-                        <button onClick={() => setStep(1)} className="px-12 py-4 bg-sky-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-sky-600 transition-all duration-300 transform hover:scale-105">
-                            Get Started
-                        </button>
+                        <div className="text-center">
+                            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 font-lora tracking-tight">
+                                Personalized Mental Wellness Blueprint
+                            </h1>
+                            <p className="text-lg text-sky-300 font-semibold mb-8">First of its kind adaptive assessment- backed by scientific research, powered by AI</p>
+                            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">This isn't just another generic mental health assessment. It's a scientifically-designed, dynamic assessment that <span className="text-slate-100 font-medium">adapts in real-time</span> to your unique well-being needs.</p>
+                            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">Our methodology is grounded in established clinical frameworks, such as the <span className="text-slate-100 font-medium">DSM-5 criteria</span> and <span className="text-slate-100 font-medium">PROMIS® scales</span>.</p>
+                            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">The process is simple: Part 1 is a brief check-in. Your confidential responses here will intelligently shape Part 2, tailoring the deeper-dive questions to focus only on what's most relevant to you. This is much like how a physician uses an initial consultation to determine the need for specific follow-up tests.</p>
+                            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-4">Our ambition is to provide you with mental wellness insights that have the same <span className="text-slate-100 font-medium">clarity and depth as a physiological test</span>, like a blood analysis. This precise, adaptive approach creates a more accurate picture of your well-being, delivering <span className="text-slate-100 font-medium">actionable insights</span> to advance your personal mental wellness journey.</p>
+                            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-8">Your privacy is our top priority. All data you provide is <span className="text-sky-300 font-semibold">encrypted</span> and handled with the highest privacy standards to ensure your information remains secure and confidential.</p>
+                            <button onClick={() => setStep(1)} className="px-12 py-4 bg-sky-500 text-white font-bold text-lg rounded-full shadow-lg hover:bg-sky-600 transition-all duration-300 transform hover:scale-105">
+                                Get Started
+                            </button>
+                        </div>
                     </FormCard>
                 );
 
