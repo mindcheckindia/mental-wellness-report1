@@ -61,17 +61,17 @@ const Timer: React.FC<{
     const recommendedMinutes = Math.ceil(recommendedSeconds / 60);
 
     const recommendationText = questionsInPart > 0
-        ? `Recommended time for this section: ~${recommendedMinutes} min`
-        : 'Recommended time for this section: N/A';
+        ? `Recommended: ~${recommendedMinutes} min`
+        : 'Recommended: N/A';
         
-    const timeTakenText = `Time you have taken: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const timeTakenText = `Time: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
     return (
-        <div className="absolute top-4 right-4 text-xs font-semibold text-sky-200 text-center">
-            <div className="bg-slate-900/50 px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+        <div className="absolute top-2 right-2 text-center">
+            <div className="bg-slate-900/50 px-3 py-1.5 rounded-full shadow-md border border-white/20 backdrop-blur-sm text-[11px] font-semibold text-sky-200">
                 {recommendationText} | {timeTakenText}
             </div>
-             {questionsInPart > 0 && <p className="text-white/80 mt-1 text-[11px]">We recommend spending about 15 seconds per question.</p>}
+             {questionsInPart > 0 && <p className="text-white/80 mt-1 text-[10px]">We recommend ~15 seconds per question.</p>}
         </div>
     );
 };
@@ -257,8 +257,8 @@ const AssessmentForm: React.FC = () => {
                     <FormCard>
                          <ProgressTracker part={part} progress={progress} part1Total={l1Questions.length} part2Total={l2Questions.length} part1Answered={l1Answered} part2Answered={l2Answered} />
 
-                        <div className="min-h-[20rem] flex flex-col">
-                            <div className="mb-6 p-4 bg-sky-900/50 rounded-lg border border-sky-700/50">
+                        <div className="flex flex-col">
+                            <div className="mb-4 p-3 bg-sky-900/50 rounded-lg border border-sky-700/50">
                                 <h2 className="text-xl font-semibold text-sky-300">{currentQuestion.sectionTitle}</h2>
                                 <p className="text-sky-300 text-sm font-medium">{currentQuestion.timeframe}</p>
                             </div>
@@ -268,9 +268,9 @@ const AssessmentForm: React.FC = () => {
                                 {currentQuestion.description && (
                                     <p className="text-sm text-sky-200 mb-4 italic">{currentQuestion.description}</p>
                                 )}
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {(shuffledOptions[currentQuestion.id] || currentQuestion.answerOptions).map(opt => (
-                                        <label key={opt.value} className={`flex items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[currentQuestion.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
+                                        <label key={opt.value} className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer transform ${answers[currentQuestion.id] === opt.value ? 'bg-sky-400/30 border-sky-400 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 bg-slate-900/30'}`}>
                                             <input type="radio" name={currentQuestion.id} value={opt.value} checked={answers[currentQuestion.id] === opt.value} onChange={() => handleAnswerChange(currentQuestion.id, opt.value)} required className="h-5 w-5 text-sky-400 focus:ring-sky-500 border-slate-400 bg-transparent"/>
                                             <span className={`ml-4 text-base ${answers[currentQuestion.id] === opt.value ? 'font-semibold text-white' : 'text-slate-200'}`}>{opt.text}</span>
                                         </label>
@@ -279,7 +279,7 @@ const AssessmentForm: React.FC = () => {
                             </fieldset>
                         </div>
 
-                         <div className="mt-8 flex justify-between items-center">
+                         <div className="mt-6 flex justify-between items-center">
                             <button onClick={handlePrevious} disabled={questionIndex === 0} className="px-6 py-3 bg-slate-700 text-white font-bold rounded-lg shadow-md hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                 Previous
                             </button>
@@ -304,8 +304,8 @@ const AssessmentForm: React.FC = () => {
                 </div>
             )}
              {step === 3 && (
-                <div className="absolute top-4 left-4 text-xs font-semibold text-amber-200 text-center">
-                    <div className="bg-slate-900/50 px-4 py-2 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
+                <div className="absolute top-2 left-2 text-[11px] font-semibold text-amber-200 text-center">
+                    <div className="bg-slate-900/50 px-3 py-1.5 rounded-full shadow-md border border-white/20 backdrop-blur-sm">
                         Prototype: Do not share without permission
                     </div>
                 </div>

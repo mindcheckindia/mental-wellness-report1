@@ -443,7 +443,7 @@ function calculateDomainResult(config: DomainConfig, allAnswers: { [questionId: 
         return { rawScore: null, finalScore: null, tScore: null };
     }
 
-    if (config.scoringMethod !== 'MAX_THRESHOLD' && (numericAnswers.length / config.intendedQuestionCount) < MINIMUM_COMPLETION_RATIO) {
+    if (config.scoringMethod === 'SUM' && (numericAnswers.length / config.intendedQuestionCount) < MINIMUM_COMPLETION_RATIO) {
         return { rawScore: null, finalScore: null, tScore: null };
     }
 

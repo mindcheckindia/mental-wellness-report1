@@ -1,6 +1,15 @@
+
 import React from 'react';
 
-const Logo: React.FC = () => {
+interface LogoProps {
+  variant?: 'dark' | 'light';
+}
+
+const Logo: React.FC<LogoProps> = ({ variant = 'dark' }) => {
+  const isLight = variant === 'light';
+  const textPrimaryColor = isLight ? '#1E293B' : '#E2E8F0'; // slate-800 for light, slate-200 for dark
+  const textSecondaryColor = isLight ? '#475569' : '#94A3B8'; // slate-600 for light, slate-400 for dark
+
   return (
     <div aria-label="Mind Path Lab: Mental wellness, simplified.">
       {/* 
@@ -65,7 +74,7 @@ const Logo: React.FC = () => {
           fontFamily="Outfit, sans-serif" 
           fontSize="18" 
           fontWeight="700"
-          fill="#E2E8F0" /* textPrimary */
+          fill={textPrimaryColor}
         >
           Mind Path Lab
         </text>
@@ -75,7 +84,7 @@ const Logo: React.FC = () => {
           fontFamily="Outfit, sans-serif" 
           fontSize="11" 
           fontWeight="400"
-          fill="#94A3B8" /* textSecondary */
+          fill={textSecondaryColor}
         >
           Mental wellness, simplified.
         </text>
