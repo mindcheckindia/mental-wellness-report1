@@ -93,16 +93,6 @@ const App: React.FC = () => {
     if (reportData) {
         return (
             <div className="min-h-screen bg-slate-100 font-inter">
-                 <header className="bg-slate-100 py-3 border-b border-slate-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end items-center">
-                        <a 
-                            href="/" 
-                            className="px-5 py-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm shadow-sm"
-                        >
-                            &larr; New Assessment
-                        </a>
-                    </div>
-                </header>
                  <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
                     <div className="max-w-7xl w-full">
                         <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
