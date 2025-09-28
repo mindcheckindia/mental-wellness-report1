@@ -96,7 +96,7 @@ const App: React.FC = () => {
                  <main className="p-4 sm:p-6 lg:p-8 flex flex-col items-center">
                     <div className="max-w-7xl w-full">
                         <div ref={reportRef} className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12 border border-slate-200">
-                            <div><Header /></div>
+                            <div><Header firstName={reportData.firstName} lastName={reportData.lastName} /></div>
                             <div><IndividualInfo data={reportData} /></div>
                             <div><AtAGlance domains={reportData.domains} /></div>
 
